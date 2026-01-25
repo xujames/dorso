@@ -15,9 +15,36 @@ This script handles:
 - DMG creation with drag-to-Applications
 - ZIP archive
 - Git tagging
-- GitHub release with proper template
+- GitHub release creation
 
-**Never manually create GitHub releases** - the script ensures proper signing, notarization, and consistent release notes.
+**Never manually create GitHub releases** - the script ensures proper signing and notarization.
+
+### After Running release.sh
+The script creates generic release notes. **You must update them** with specific changes using:
+```bash
+gh release edit vX.Y.Z --notes "$(cat <<'EOF'
+## What's New
+
+### Bug Fix (or Feature, Improvement, etc.)
+- **Short title** - Description of what changed and why it matters.
+
+### Also in this release
+- Any other notable points
+
+## Installation
+
+1. Download `Posturr-vX.Y.Z.dmg` or `Posturr-vX.Y.Z.zip`
+2. Drag `Posturr.app` to Applications
+3. Launch normally - no warnings!
+4. Grant camera permission and complete calibration
+
+## Requirements
+- macOS 13.0 (Ventura) or later
+EOF
+)"
+```
+
+The release notes should describe what changed since the previous version, not generic feature lists.
 
 ### App Store Release
 For App Store submissions:
