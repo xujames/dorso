@@ -47,33 +47,44 @@ EOF
 The release notes should describe what changed since the previous version, not generic feature lists.
 
 ### App Store Release
-For App Store submissions:
+For App Store submissions, run these steps after the GitHub release:
+
 ```bash
+cd /Users/tjohnell/projects/posturr
+
+# 1. Build for App Store (excludes private APIs)
 ./build.sh --appstore
-```
 
-Then sign and package:
-```bash
-# Copy to appstore folder
+# 2. Copy to appstore folder and sign
+rm -rf build-appstore/Posturr.app
 cp -r build/Posturr.app build-appstore/
-
-# Sign with Apple Distribution
 cd build-appstore
+
 codesign --force --options runtime \
     --entitlements Posturr.entitlements \
     --sign "Apple Distribution: Thomas Johnell (KBF2YGT2KP)" \
     --timestamp \
     Posturr.app
 
-# Create installer package
+# 3. Create installer package
+rm -f Posturr.pkg
 productbuild \
     --component Posturr.app /Applications \
     --sign "3rd Party Mac Developer Installer: Thomas Johnell (KBF2YGT2KP)" \
     Posturr.pkg
 
-# Upload
+# 4. Upload (ask user for app-specific password)
 xcrun altool --upload-app -f Posturr.pkg -t macos -u tjohnell@gmail.com -p APP_SPECIFIC_PASSWORD
 ```
+
+**Important:** The upload requires an app-specific password from appleid.apple.com. Ask the user to provide it when uploading - do not store it in files.
+
+After upload:
+1. Go to App Store Connect → App Store tab
+2. Select the version (e.g., "1.0 Prepare for Submission")
+3. Scroll to Build section → click + → select the new build
+4. Answer Export Compliance: "No" (no encryption)
+5. Save → Add for Review → Submit to App Review
 
 ## Build Configurations
 
