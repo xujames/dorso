@@ -365,12 +365,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Hysteresis - different thresholds for entering vs exiting slouch state
     var isCurrentlySlouching = false
 
+    // Frame throttling - process ~10fps instead of 30fps to reduce CPU
+    var lastFrameTime: Date = .distantPast
+    let frameInterval: TimeInterval = 0.1  // 10fps
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMenuBar()
         setupOverlayWindows()
 
-        // Smooth blur transition timer
-        Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { [weak self] _ in
+        // Smooth blur transition timer (30fps is enough for smooth transitions)
+        Timer.scheduledTimer(withTimeInterval: 0.033, repeats: true) { [weak self] _ in
             self?.updateBlur()
         }
 
@@ -731,7 +735,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func setupCamera() {
         captureSession = AVCaptureSession()
-        captureSession?.sessionPreset = .medium
+        captureSession?.sessionPreset = .low  // Low resolution is sufficient for pose detection
 
         guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front)
                 ?? AVCaptureDevice.default(for: .video),
@@ -900,6 +904,11 @@ extension AppDelegate: AVCaptureVideoDataOutputSampleBufferDelegate {
                 self.onCameraPermissionGranted()
             }
         }
+
+        // Throttle frame processing to reduce CPU usage (~10fps instead of 30fps)
+        let now = Date()
+        guard now.timeIntervalSince(lastFrameTime) >= frameInterval else { return }
+        lastFrameTime = now
 
         processFrame(pixelBuffer)
     }
