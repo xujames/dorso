@@ -23,7 +23,7 @@ set -e
 # Configuration - UPDATE THESE VALUES
 APP_NAME="Posturr"
 BUNDLE_ID="com.thelazydeveloper.posturr"  # Must match App Store Connect
-VERSION="1.0.9"
+VERSION="1.0.10"
 MIN_MACOS="13.0"
 
 # Signing identity (find yours with: security find-identity -v -p codesigning)

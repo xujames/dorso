@@ -801,8 +801,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Slow ease-in: +1 per frame
             currentBlurRadius = min(currentBlurRadius + 1, targetBlurRadius)
         } else if currentBlurRadius > targetBlurRadius {
-            // Smooth ease-out: always decrement by 1 for smoothest fade
-            currentBlurRadius = max(currentBlurRadius - 1, targetBlurRadius)
+            // Fast ease-out: -3 per frame for quick recovery
+            currentBlurRadius = max(currentBlurRadius - 3, targetBlurRadius)
         }
 
         // Calculate alpha for NSVisualEffectView modes
