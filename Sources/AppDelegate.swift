@@ -55,6 +55,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var currentBlurRadius: Int32 = 0
     var targetBlurRadius: Int32 = 0
 
+    // Warning overlay (alternative to blur)
+    var warningOverlayManager = WarningOverlayManager()
+    var warningMode: WarningMode = .blur
+    var warningColor: NSColor = WarningDefaults.color
+
     // Camera
     var captureSession: AVCaptureSession?
     var videoOutput: AVCaptureVideoDataOutput?
@@ -224,6 +229,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         setupMenuBar()
         setupOverlayWindows()
+        if warningMode != .blur {
+            warningOverlayManager.mode = warningMode
+            warningOverlayManager.warningColor = warningColor
+            warningOverlayManager.setupOverlayWindows()
+        }
         registerDisplayChangeCallback()
         registerCameraChangeNotifications()
 
@@ -676,6 +686,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         defaults.set(blurWhenAway, forKey: SettingsKeys.blurWhenAway)
         defaults.set(showInDock, forKey: SettingsKeys.showInDock)
         defaults.set(pauseOnTheGo, forKey: SettingsKeys.pauseOnTheGo)
+        defaults.set(warningMode.rawValue, forKey: SettingsKeys.warningMode)
+        if let colorData = try? NSKeyedArchiver.archivedData(withRootObject: warningColor, requiringSecureCoding: false) {
+            defaults.set(colorData, forKey: SettingsKeys.warningColor)
+        }
         if let cameraID = selectedCameraID {
             defaults.set(cameraID, forKey: SettingsKeys.lastCameraID)
         }
@@ -695,6 +709,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         showInDock = defaults.bool(forKey: SettingsKeys.showInDock)
         pauseOnTheGo = defaults.bool(forKey: SettingsKeys.pauseOnTheGo)
         selectedCameraID = defaults.string(forKey: SettingsKeys.lastCameraID)
+        if let modeString = defaults.string(forKey: SettingsKeys.warningMode),
+           let mode = WarningMode(rawValue: modeString) {
+            warningMode = mode
+        }
+        if let colorData = defaults.data(forKey: SettingsKeys.warningColor),
+           let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: colorData) {
+            warningColor = color
+        }
     }
 
     func saveProfile(forKey key: String, data: ProfileData) {
@@ -856,9 +878,78 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         windows.removeAll()
         blurViews.removeAll()
         setupOverlayWindows()
+
+        if warningMode != .blur {
+            warningOverlayManager.rebuildOverlayWindows()
+        }
+    }
+
+    func clearBlur() {
+        targetBlurRadius = 0
+        currentBlurRadius = 0
+
+        // Clear NSVisualEffectView alpha
+        for blurView in blurViews {
+            blurView.alphaValue = 0
+        }
+
+        #if !APP_STORE
+        // Clear private API blur
+        if let getConnectionID = cgsMainConnectionID,
+           let setBlurRadius = cgsSetWindowBackgroundBlurRadius {
+            let cid = getConnectionID()
+            for window in windows {
+                _ = setBlurRadius(cid, UInt32(window.windowNumber), 0)
+            }
+        }
+        #endif
+    }
+
+    func switchWarningMode(to newMode: WarningMode) {
+        // Reset current warning state
+        clearBlur()
+
+        // Clear vignette/border intensity before removing windows
+        warningOverlayManager.currentIntensity = 0
+        warningOverlayManager.targetIntensity = 0
+        for view in warningOverlayManager.overlayViews {
+            if let vignetteView = view as? VignetteOverlayView {
+                vignetteView.intensity = 0
+            } else if let borderView = view as? BorderOverlayView {
+                borderView.intensity = 0
+            }
+        }
+
+        // Remove old warning overlay windows
+        for window in warningOverlayManager.windows {
+            window.orderOut(nil)
+        }
+        warningOverlayManager.windows.removeAll()
+        warningOverlayManager.overlayViews.removeAll()
+
+        // Set new mode and rebuild if needed
+        warningMode = newMode
+        if warningMode != .blur {
+            warningOverlayManager.mode = warningMode
+            warningOverlayManager.warningColor = warningColor
+            warningOverlayManager.setupOverlayWindows()
+        }
+    }
+
+    func updateWarningColor(_ color: NSColor) {
+        warningColor = color
+        warningOverlayManager.updateColor(color)
     }
 
     func updateBlur() {
+        // Update warning overlay if not in blur mode
+        if warningMode != .blur {
+            warningOverlayManager.targetIntensity = CGFloat(targetBlurRadius) / 64.0
+            warningOverlayManager.updateWarning()
+            return
+        }
+
+        // Original blur logic
         if currentBlurRadius < targetBlurRadius {
             currentBlurRadius = min(currentBlurRadius + 1, targetBlurRadius)
         } else if currentBlurRadius > targetBlurRadius {

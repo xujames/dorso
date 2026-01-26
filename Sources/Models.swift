@@ -1,5 +1,20 @@
 import Foundation
 import CoreGraphics
+import AppKit
+
+// MARK: - Constants
+
+enum WarningDefaults {
+    static let color = NSColor(red: 0.85, green: 0.05, blue: 0.05, alpha: 1.0)
+}
+
+// MARK: - Warning Mode
+
+enum WarningMode: String, CaseIterable {
+    case blur = "blur"
+    case vignette = "vignette"
+    case border = "border"
+}
 
 // MARK: - Settings Keys
 enum SettingsKeys {
@@ -11,6 +26,8 @@ enum SettingsKeys {
     static let pauseOnTheGo = "pauseOnTheGo"
     static let lastCameraID = "lastCameraID"
     static let profiles = "profiles"
+    static let warningMode = "warningMode"
+    static let warningColor = "warningColor"
 }
 
 // MARK: - Profile Data

@@ -5,6 +5,22 @@ All notable changes to Posturr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-26
+
+### Added
+- Alternative warning styles: Vignette and Border modes in addition to Blur
+- Vignette mode: Red glow that creeps in from screen edges (like video game damage)
+- Border mode: Red gradient borders on all four screen edges
+- Customizable warning color picker for Vignette and Border modes
+- Warning Style selector in Settings with Blur/Vignette/Border options
+
+### Changed
+- Refactored overlay system with new WarningOverlay.swift module
+- Centralized warning color constant for consistency
+
+### Acknowledgments
+- Thanks to [@jonocairns](https://github.com/jonocairns) for suggesting the screen border alternative to blur!
+
 ## [1.1.1] - 2026-01-26
 
 ### Changed

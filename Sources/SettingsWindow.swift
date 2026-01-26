@@ -28,7 +28,7 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: settingsView)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 580, height: 320),
+            contentRect: NSRect(x: 0, y: 0, width: 580, height: 380),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -148,6 +148,8 @@ struct SettingsView: View {
     @State private var useCompatibilityMode: Bool = false
     @State private var selectedCameraID: String = ""
     @State private var availableCameras: [(id: String, name: String)] = []
+    @State private var warningMode: WarningMode = .blur
+    @State private var warningColor: Color = Color(WarningDefaults.color)
 
     let intensityValues: [Double] = [0.5, 0.75, 1.0, 1.5, 2.0]
     let intensityLabels = ["Gentle", "Easy", "Medium", "Firm", "Aggressive"]
@@ -171,6 +173,36 @@ struct SettingsView: View {
                             appDelegate.selectedCameraID = newValue
                             appDelegate.saveSettings()
                             appDelegate.restartCamera()
+                        }
+                    }
+                }
+
+                GroupBoxWithInfo("Warning Style", helpText: "How Posturr alerts you when slouching. Blur obscures the screen, Vignette shows a red glow from the edges, Border shows red borders around the screen.") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Picker("", selection: $warningMode) {
+                            Text("Blur").tag(WarningMode.blur)
+                            Text("Vignette").tag(WarningMode.vignette)
+                            Text("Border").tag(WarningMode.border)
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.segmented)
+                        .onChange(of: warningMode) { newValue in
+                            if newValue != appDelegate.warningMode {
+                                appDelegate.switchWarningMode(to: newValue)
+                                appDelegate.saveSettings()
+                            }
+                        }
+
+                        HStack {
+                            Text("Color")
+                            Spacer()
+                            ColorPicker("", selection: $warningColor, supportsOpacity: false)
+                                .labelsHidden()
+                                .onChange(of: warningColor) { newValue in
+                                    let nsColor = NSColor(newValue)
+                                    appDelegate.updateWarningColor(nsColor)
+                                    appDelegate.saveSettings()
+                                }
                         }
                     }
                 }
@@ -315,6 +347,8 @@ struct SettingsView: View {
         showInDock = appDelegate.showInDock
         pauseOnTheGo = appDelegate.pauseOnTheGo
         useCompatibilityMode = appDelegate.useCompatibilityMode
+        warningMode = appDelegate.warningMode
+        warningColor = Color(appDelegate.warningColor)
 
         // Set slider indices based on loaded values
         intensitySlider = Double(intensityValues.firstIndex(of: intensity) ?? 2)
