@@ -23,6 +23,7 @@ DerivedData/
 *.ipa
 *.dSYM.zip
 *.dSYM
+.swiftpm/
 
 # Temporary files
 /tmp/
