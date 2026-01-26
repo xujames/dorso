@@ -46,6 +46,13 @@ EOF
 
 The release notes should describe what changed since the previous version, not generic feature lists.
 
+### Update CHANGELOG.md
+After updating the GitHub release notes, also update `CHANGELOG.md` with a new entry:
+- Add the new version section at the top (after the header)
+- Use Keep a Changelog format with `### Added`, `### Changed`, `### Fixed` sections as appropriate
+- Include the release date in YYYY-MM-DD format
+- Commit and push the changelog update
+
 ### Update Homebrew Cask
 After each GitHub release, update the Homebrew tap at https://github.com/tldev/homebrew-tap:
 
