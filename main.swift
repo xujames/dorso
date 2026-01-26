@@ -577,8 +577,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if !isEnabled {
             targetBlurRadius = 0
             statusMenuItem.title = "Status: Disabled"
+            captureSession?.stopRunning()
         } else {
             statusMenuItem.title = "Status: Monitoring..."
+            captureSession?.startRunning()
         }
     }
 
