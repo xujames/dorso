@@ -214,7 +214,7 @@ struct WarningStylePicker: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach([WarningMode.blur, .vignette, .border, .none], id: \.self) { mode in
+            ForEach([WarningMode.blur, .vignette, .border, .solid, .none], id: \.self) { mode in
                 Button(action: { selection = mode }) {
                     Text(mode.displayName)
                         .font(.system(size: 11, weight: selection == mode ? .semibold : .regular))
@@ -244,6 +244,7 @@ extension WarningMode {
         case .blur: return "Blur"
         case .vignette: return "Vignette"
         case .border: return "Border"
+        case .solid: return "Solid"
         case .none: return "None"
         }
     }

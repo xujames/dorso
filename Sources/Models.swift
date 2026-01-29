@@ -14,13 +14,14 @@ enum WarningMode: String, CaseIterable {
     case blur = "blur"
     case vignette = "vignette"
     case border = "border"
+    case solid = "solid"
     case none = "none"
 
     /// Whether this mode uses the WarningOverlayManager for posture warnings.
-    /// Vignette and border use the overlay system; blur and none do not.
+    /// Vignette, border, and solid use the overlay system; blur and none do not.
     var usesWarningOverlay: Bool {
         switch self {
-        case .vignette, .border: return true
+        case .vignette, .border, .solid: return true
         case .blur, .none: return false
         }
     }

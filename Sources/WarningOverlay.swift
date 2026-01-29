@@ -285,6 +285,64 @@ class BorderOverlayView: NSView {
     }
 }
 
+// MARK: - Solid Overlay View
+
+class SolidOverlayView: NSView {
+    private var colorLayer: CALayer!
+    private var lastDrawnIntensity: CGFloat = -1
+
+    var intensity: CGFloat = 0.0 {
+        didSet {
+            updateLayerIfNeeded()
+        }
+    }
+
+    var warningColor: NSColor = WarningDefaults.color {
+        didSet {
+            lastDrawnIntensity = -1
+            updateLayerIfNeeded()
+        }
+    }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupLayer()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupLayer()
+    }
+
+    private func setupLayer() {
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.clear.cgColor
+
+        colorLayer = CALayer()
+        colorLayer.frame = bounds
+        colorLayer.backgroundColor = NSColor.clear.cgColor
+        layer?.addSublayer(colorLayer)
+    }
+
+    override func layout() {
+        super.layout()
+        colorLayer.frame = bounds
+        lastDrawnIntensity = -1
+        updateLayerIfNeeded()
+    }
+
+    private func updateLayerIfNeeded() {
+        let threshold: CGFloat = 0.01
+        guard abs(intensity - lastDrawnIntensity) > threshold else { return }
+
+        lastDrawnIntensity = intensity
+
+        let maxAlpha: CGFloat = 1.0
+        let alpha = intensity * maxAlpha
+        colorLayer.backgroundColor = warningColor.withAlphaComponent(alpha).cgColor
+    }
+}
+
 // MARK: - Warning Overlay Manager
 
 class WarningOverlayManager {
@@ -319,6 +377,10 @@ class WarningOverlayManager {
                 overlayView = view
             case .border:
                 let view = BorderOverlayView(frame: NSRect(origin: .zero, size: frame.size))
+                view.warningColor = warningColor
+                overlayView = view
+            case .solid:
+                let view = SolidOverlayView(frame: NSRect(origin: .zero, size: frame.size))
                 view.warningColor = warningColor
                 overlayView = view
             case .blur, .none:
@@ -358,6 +420,8 @@ class WarningOverlayManager {
                 vignetteView.intensity = currentIntensity
             } else if let borderView = view as? BorderOverlayView {
                 borderView.intensity = currentIntensity
+            } else if let solidView = view as? SolidOverlayView {
+                solidView.intensity = currentIntensity
             }
         }
     }
@@ -369,6 +433,8 @@ class WarningOverlayManager {
                 vignetteView.warningColor = color
             } else if let borderView = view as? BorderOverlayView {
                 borderView.warningColor = color
+            } else if let solidView = view as? SolidOverlayView {
+                solidView.warningColor = color
             }
         }
     }

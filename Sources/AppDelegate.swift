@@ -1216,8 +1216,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Only privacy blur, no posture warning visual
             targetBlurRadius = Int32(privacyBlurIntensity * 64)
             warningOverlayManager.targetIntensity = 0
-        case .vignette, .border:
-            // Privacy uses blur, posture uses vignette/border overlay
+        case .vignette, .border, .solid:
+            // Privacy uses blur, posture uses vignette/border/solid overlay
             targetBlurRadius = Int32(privacyBlurIntensity * 64)
             warningOverlayManager.targetIntensity = postureWarningIntensity
         }
