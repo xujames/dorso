@@ -3,6 +3,14 @@
 ## Releasing
 
 ### GitHub Release (Direct Distribution)
+
+**IMPORTANT: Before releasing, always check existing releases and tags:**
+```bash
+gh release list --limit 5
+git tag --sort=-v:refname | head -5
+```
+Only proceed if the version you're about to release doesn't already exist.
+
 Always use the release script for GitHub releases:
 ```bash
 ./release.sh 1.0.X
