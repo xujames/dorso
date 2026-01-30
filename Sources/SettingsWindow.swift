@@ -370,7 +370,7 @@ struct SettingsView: View {
                                         Text("Style")
                                             .font(.system(size: 13))
 
-                                        HelpButton(text: "How Posturr alerts you when slouching. Blur obscures the screen, Vignette shows a glow from the edges, Border shows colored borders. None disables visual warnings.")
+                                        HelpButton(text: "How Posturr alerts you when slouching. Blur obscures the screen, Vignette shows a glow from the edges, Border shows colored borders, Solid fills the screen completely. None disables visual warnings.")
                                     }
 
                                     WarningStylePicker(selection: $warningMode)
