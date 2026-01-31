@@ -144,7 +144,6 @@ class AnalyticsManager: ObservableObject {
             try data.write(to: fileURL)
             hasUnsavedChanges = false
         } catch {
-            print("[Analytics] Failed to save history: \(error)")
         }
     }
     
@@ -160,7 +159,6 @@ class AnalyticsManager: ObservableObject {
                 todayStats = existingToday
             }
         } catch {
-            print("[Analytics] Failed to load history: \(error)")
         }
     }
 }

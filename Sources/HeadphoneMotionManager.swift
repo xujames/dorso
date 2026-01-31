@@ -30,7 +30,6 @@ class HeadphoneMotionManager: ObservableObject {
         guard #available(macOS 14.0, *),
               let motionManager = _motionManager as? CMHeadphoneMotionManager,
               motionManager.isDeviceMotionAvailable else {
-            print("Headphone motion not available (OS version or H/W)")
             return
         }
         
@@ -67,7 +66,6 @@ class HeadphoneMotionManager: ObservableObject {
             // Mark as active (Permission granted & Data received)
             if !self.isActive {
                 self.isActive = true
-                print("[HeadphoneMotionManager] Data received. Permission granted.")
                 // Fire all pending completions
                 self.pendingCompletions.forEach { $0() }
                 self.pendingCompletions.removeAll()

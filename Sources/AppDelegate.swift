@@ -89,7 +89,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Tracking Source (Camera or AirPods)
     var trackingSource: TrackingSource = .camera {
         didSet {
-            print("[Mode] Tracking Source Changed: \(oldValue) -> \(trackingSource)")
             syncCameraToState()
             syncAirPodsToState()
             
@@ -169,7 +168,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func handleStateTransition(from oldState: AppState, to newState: AppState) {
-        print("[State] Transition: \(oldState) -> \(newState)")
         syncCameraToState()
         syncAirPodsToState()
         if !newState.isActive {
@@ -190,12 +188,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         if shouldRun {
             if !headphoneMotionManager.isActive {
-                print("[State] Starting AirPods Tracking")
                 headphoneMotionManager.startTracking()
             }
         } else {
             if headphoneMotionManager.isActive {
-                print("[State] Stopping AirPods Tracking")
                 headphoneMotionManager.stopTracking()
             }
         }
@@ -210,24 +206,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             shouldRun = false
         }
 
-        print("[State] syncCameraToState: state=\(state), shouldRun=\(shouldRun), isRunning=\(captureSession?.isRunning ?? false)")
 
         if shouldRun {
             ensureCameraInput()
-            let hasInputs = !(captureSession?.inputs.isEmpty ?? true)
-            print("[State] After ensureCameraInput: hasInputs=\(hasInputs)")
 
             if !(captureSession?.isRunning ?? false) {
-                print("[State] Starting capture session...")
                 DispatchQueue.global(qos: .userInitiated).async {
                     self.captureSession?.startRunning()
                     DispatchQueue.main.async {
-                        print("[State] Capture session running: \(self.captureSession?.isRunning ?? false)")
                     }
                 }
             }
         } else if captureSession?.isRunning ?? false {
-            print("[State] Stopping capture session")
             captureSession?.stopRunning()
         }
     }
@@ -459,7 +449,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Request permission/data -> Calibrate
         headphoneMotionManager.startTracking { [weak self] in
             DispatchQueue.main.async {
-                print("[Tracking] AirPods connected. Starting calibration...")
                 self?.startCalibration()
             }
         }
@@ -642,13 +631,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             device.activeVideoMaxFrameDuration = frameDuration
             device.unlockForConfiguration()
         } catch {
-            print("[Camera] Failed to set frame rate: \(error)")
         }
     }
 
     private func switchCameraInput() {
         let wasRunning = captureSession?.isRunning ?? false
-        print("[Camera] switchCameraInput called, wasRunning=\(wasRunning), selectedCameraID=\(selectedCameraID ?? "nil")")
 
         if wasRunning {
             captureSession?.stopRunning()
@@ -661,11 +648,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let cameras = getAvailableCameras()
-        print("[Camera] Available cameras: \(cameras.map { $0.localizedName })")
         let camera = cameras.first { $0.uniqueID == selectedCameraID } ?? cameras.first
 
         guard let selectedCamera = camera else {
-            print("[Camera] ERROR: No camera found!")
             return
         }
 
@@ -673,34 +658,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let input = try AVCaptureDeviceInput(device: selectedCamera)
             selectedCameraID = selectedCamera.uniqueID
             captureSession?.addInput(input)
-            print("[Camera] Successfully added input for \(selectedCamera.localizedName)")
         } catch {
-            print("[Camera] ERROR: Failed to create input: \(error)")
             return
         }
 
         if wasRunning {
             DispatchQueue.global(qos: .userInitiated).async {
                 self.captureSession?.startRunning()
-                print("[Camera] Restarted session after input switch")
             }
         }
     }
 
     private func ensureCameraInput() {
         guard let session = captureSession else {
-            print("[Camera] ensureCameraInput: No capture session!")
             return
         }
 
         if let currentInput = session.inputs.first as? AVCaptureDeviceInput {
             if currentInput.device.uniqueID == selectedCameraID {
-                print("[Camera] ensureCameraInput: Already have correct input")
                 return
             }
-            print("[Camera] ensureCameraInput: Have input for \(currentInput.device.uniqueID), but need \(selectedCameraID ?? "nil")")
         } else {
-            print("[Camera] ensureCameraInput: No current input, need to configure")
         }
 
         switchCameraInput()
@@ -792,34 +770,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard let device = notification.object as? AVCaptureDevice,
               device.hasMediaType(.video) else { return }
 
-        print("[Camera] Disconnected: \(device.localizedName) (ID: \(device.uniqueID))")
-        print("[Camera] Selected camera was: \(selectedCameraID ?? "nil")")
 
         guard device.uniqueID == selectedCameraID else {
-            print("[Camera] Not our selected camera, just refreshing menu")
             syncUIToState()
             return
         }
 
         let cameras = getAvailableCameras()
-        print("[Camera] Remaining cameras: \(cameras.map { "\($0.localizedName) (\($0.uniqueID))" })")
 
         if let fallbackCamera = cameras.first {
             selectedCameraID = fallbackCamera.uniqueID
-            print("[Camera] Auto-selecting fallback: \(fallbackCamera.localizedName)")
             switchCameraInput()
 
             let configKey = getCurrentConfigKey()
             if let profile = loadProfile(forKey: configKey), profile.cameraID == fallbackCamera.uniqueID {
-                print("[Camera] Found matching profile for fallback camera, resuming monitoring")
                 applyProfile(profile)
                 state = .monitoring
             } else {
-                print("[Camera] No matching profile for fallback camera, need recalibration")
                 state = .paused(.noProfile)
             }
         } else {
-            print("[Camera] No cameras remaining!")
             state = .paused(.cameraDisconnected)
         }
     }
@@ -847,34 +817,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func handleScreenLocked() {
-        print("[ScreenLock] Screen locked")
 
         // Only save state and pause if we're in an active state
         guard state.isActive || (state != .disabled && state != .paused(.screenLocked)) else {
-            print("[ScreenLock] Already paused or disabled, not changing state")
             return
         }
 
         stateBeforeLock = state
-        print("[ScreenLock] Saved state: \(state), pausing")
         state = .paused(.screenLocked)
     }
 
     func handleScreenUnlocked() {
-        print("[ScreenLock] Screen unlocked")
 
         // Only restore if we paused due to screen lock
         guard case .paused(.screenLocked) = state else {
-            print("[ScreenLock] Not paused due to screen lock, ignoring")
             return
         }
 
         if let previousState = stateBeforeLock {
-            print("[ScreenLock] Restoring previous state: \(previousState)")
             state = previousState
             stateBeforeLock = nil
         } else {
-            print("[ScreenLock] No saved state, transitioning to monitoring")
             state = .monitoring
         }
     }
@@ -920,7 +883,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             )
 
             if status != noErr {
-                print("[Shortcut] Failed to install event handler: \(status)")
                 return
             }
         }
@@ -936,7 +898,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         if status != noErr {
-            print("[Shortcut] Failed to register hotkey: \(status)")
         }
     }
 
@@ -976,11 +937,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func startCalibration() {
         guard state != .calibrating else {
-            print("[Calibration] Already calibrating, ignoring")
             return
         }
 
-        print("[Calibration] Starting calibration, selectedCameraID: \(selectedCameraID ?? "nil")")
         isCalibrated = false
         state = .calibrating
 
@@ -1013,16 +972,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     )
                     self.airPodsProfile = profile
                     self.saveSettings()
-                    print("[Calibration] AirPods profile saved (Avg of \(motions.count)): \(profile)")
                     
                     self.isCalibrated = true
                     self.calibrationController = nil
                     
-                    print("[Calibration] AirPods calibration complete, transitioning to monitoring")
                     self.state = .monitoring
                 } else {
                     // Camera Calibration Complete (Original Logic)
-                    print("[Calibration] Finishing with \(values.count) values")
 
                     let maxY = values.max() ?? 0.6
                     let minY = values.min() ?? 0.4
@@ -1041,7 +997,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         cameraID: self.selectedCameraID ?? ""
                     )
                     let configKey = self.getCurrentConfigKey()
-                    print("[Calibration] Saving profile for config: \(configKey), camera: \(self.selectedCameraID ?? "nil")")
                     self.saveProfile(forKey: configKey, data: profile)
 
                     self.isCalibrated = true
@@ -1050,12 +1005,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.consecutiveBadFrames = 0
                     self.consecutiveGoodFrames = 0
 
-                    print("[Calibration] Complete, transitioning to monitoring")
                     self.state = .monitoring
                 }
             },
             onCancel: { [weak self] in
-                print("[Calibration] Cancelled")
                 self?.calibrationController = nil
                 self?.isCalibrated = true
                 self?.state = .monitoring
@@ -1230,16 +1183,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func handleDisplayConfigurationChange() {
-        print("[Display] Configuration changed, rebuilding overlay windows")
         rebuildOverlayWindows()
 
         guard state != .disabled else {
-            print("[Display] App is disabled, skipping state change")
             return
         }
 
         if pauseOnTheGo && isLaptopOnlyConfiguration() {
-            print("[Display] Laptop-only + pauseOnTheGo enabled, pausing")
             state = .paused(.onTheGo)
             return
         }
@@ -1248,28 +1198,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let configKey = getCurrentConfigKey()
         let profile = loadProfile(forKey: configKey)
 
-        print("[Display] Config key: \(configKey)")
-        print("[Display] Available cameras: \(cameras.map { "\($0.localizedName) (\($0.uniqueID))" })")
-        print("[Display] Profile exists: \(profile != nil), profile cameraID: \(profile?.cameraID ?? "none")")
 
         if cameras.isEmpty {
-            print("[Display] No cameras available")
             state = .paused(.cameraDisconnected)
             return
         }
 
         if let profile = profile,
            cameras.contains(where: { $0.uniqueID == profile.cameraID }) {
-            print("[Display] Found profile with matching camera")
             if selectedCameraID != profile.cameraID {
-                print("[Display] Switching to profile camera: \(profile.cameraID)")
                 selectedCameraID = profile.cameraID
                 switchCameraInput()
             }
             applyProfile(profile)
             state = .monitoring
         } else {
-            print("[Display] No matching profile, need calibration")
             state = .paused(.noProfile)
         }
     }
