@@ -215,7 +215,7 @@ Want this on Linux? See [postured](https://github.com/vadi2/postured).
 
 ### Contributors
 
-- [@kimik-hyum](https://github.com/kimik-hyum) - AirPods motion tracking
+- [@kimik-hyum](https://github.com/kimik-hyum) - AirPods motion tracking, forward-head posture detection
 - [@wklm](https://github.com/wklm) - Compatibility mode implementation
 - [@cam-br0wn](https://github.com/cam-br0wn) - Dock/App Switcher visibility toggle
 - [@einsteinx2](https://github.com/einsteinx2) - SwiftPM/Xcode support
