@@ -26,6 +26,8 @@ struct CameraCalibrationData: CalibrationData {
     let neutralY: CGFloat
     let postureRange: CGFloat
     let cameraID: String
+    // [Step 2] New field for Head Size Logic
+    var neutralFaceWidth: CGFloat = 0.0
 
     var isValid: Bool {
         postureRange > 0.01 && !cameraID.isEmpty

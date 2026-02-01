@@ -69,6 +69,7 @@ class CameraPostureDetector: NSObject, PostureDetector {
     // MARK: - Detection State
 
     private var currentNoseY: CGFloat = 0.5
+    private var currentFaceWidth: CGFloat = 0.0 // [Step 2]
     private var noseYHistory: [CGFloat] = []
     private let smoothingWindow = 5
     private var isCurrentlySlouching = false
@@ -134,26 +135,46 @@ class CameraPostureDetector: NSObject, PostureDetector {
     // MARK: - Calibration
 
     func getCurrentCalibrationValue() -> Any {
+        // [Step 2] Return tuple if we have width
+        if currentFaceWidth > 0 {
+            return (currentNoseY, currentFaceWidth)
+        }
         return currentNoseY
     }
 
     func createCalibrationData(from points: [Any]) -> CalibrationData? {
-        let yValues = points.compactMap { $0 as? CGFloat }
+        // Points can be [CGFloat] or [(CGFloat, CGFloat)]
+        var yValues: [CGFloat] = []
+        var widthValues: [CGFloat] = []
+        
+        for point in points {
+            if let y = point as? CGFloat {
+                yValues.append(y)
+            } else if let (y, width) = point as? (CGFloat, CGFloat) {
+                yValues.append(y)
+                widthValues.append(width)
+            }
+        }
+        
         guard yValues.count >= 4 else { return nil }
 
         let maxY = yValues.max() ?? 0.6
         let minY = yValues.min() ?? 0.4
         let avgY = yValues.reduce(0, +) / CGFloat(yValues.count)
         let range = abs(maxY - minY)
+        
+        // [Step 2] Calculate neutral face width
+        let neutralWidth = widthValues.isEmpty ? 0.0 : widthValues.reduce(0, +) / CGFloat(widthValues.count)
 
-        os_log(.info, log: log, "Created calibration: goodY=%.3f, badY=%.3f, range=%.3f", maxY, minY, range)
+        os_log(.info, log: log, "Created calibration: goodY=%.3f, badY=%.3f, range=%.3f, neutralWidth=%.3f", maxY, minY, range, neutralWidth)
 
         return CameraCalibrationData(
             goodPostureY: maxY,
             badPostureY: minY,
             neutralY: avgY,
             postureRange: range,
-            cameraID: selectedCameraID ?? ""
+            cameraID: selectedCameraID ?? "",
+            neutralFaceWidth: neutralWidth
         )
     }
 
@@ -302,7 +323,8 @@ class CameraPostureDetector: NSObject, PostureDetector {
         let faceRequest = VNDetectFaceRectanglesRequest { [weak self] request, error in
             if let results = request.results as? [VNFaceObservation], let face = results.first {
                 self?.consecutiveNoDetectionFrames = 0
-                self?.handleDetection(noseY: face.boundingBox.midY)
+                // [Step 2] Also capture face width
+                self?.handleDetection(noseY: face.boundingBox.midY, faceWidth: face.boundingBox.width)
             } else {
                 self?.handleNoDetection()
             }
@@ -311,11 +333,19 @@ class CameraPostureDetector: NSObject, PostureDetector {
         try? handler.perform([faceRequest])
     }
 
-    private func handleDetection(noseY: CGFloat) {
+    private func handleDetection(noseY: CGFloat, faceWidth: CGFloat? = nil) {
         currentNoseY = noseY
+        if let width = faceWidth {
+            currentFaceWidth = width
+        }
 
         // Send calibration update
-        onCalibrationUpdate?(noseY)
+        // We pack (noseY, faceWidth) as calibration value if width exists
+        if let width = faceWidth {
+             onCalibrationUpdate?((noseY, width))
+        } else {
+             onCalibrationUpdate?(noseY)
+        }
 
         // Reset away state
         if blurWhenAway {
@@ -324,7 +354,7 @@ class CameraPostureDetector: NSObject, PostureDetector {
 
         // Evaluate posture if monitoring
         if isMonitoring, let calibration = calibrationData {
-            evaluatePosture(currentY: noseY, calibration: calibration)
+            evaluatePosture(currentY: noseY, currentFaceWidth: faceWidth ?? 0, calibration: calibration)
         }
     }
 
@@ -348,28 +378,71 @@ class CameraPostureDetector: NSObject, PostureDetector {
         return noseYHistory.reduce(0, +) / CGFloat(noseYHistory.count)
     }
 
-    private func evaluatePosture(currentY: CGFloat, calibration: CameraCalibrationData) {
+
+    
+    // [Step 2] New evaluation logic for Head Size
+    private func evaluatePosture(currentY: CGFloat, currentFaceWidth: CGFloat, calibration: CameraCalibrationData) {
         let smoothedY = smoothNoseY(currentY)
 
-        // How far past the bad posture threshold (positive = slouching)
+        // 1. Existing Logic: Vertical Position (Slouching down)
         let slouchAmount = calibration.badPostureY - smoothedY
-
-        // Dead zone is an absolute buffer (percentage of posture range)
         let deadZoneThreshold = deadZone * calibration.postureRange
-
-        // Hysteresis: easier to exit slouching state than enter it
+        
         let enterThreshold = deadZoneThreshold
         let exitThreshold = deadZoneThreshold * 0.7
         let threshold = isCurrentlySlouching ? exitThreshold : enterThreshold
+        
+        var isBadPosture = slouchAmount > threshold
+        
+        // 2. [Step 2] New Logic: Head Size (Turtle Neck - moving closer)
+        // Only if we have valid calibration for width
+        if calibration.neutralFaceWidth > 0 && currentFaceWidth > 0 {
+            let ratio = currentFaceWidth / calibration.neutralFaceWidth
+            // Turtle neck threshold: if face is > 5% larger (plus deadzone buffer)
+            // This suggests head moved significantly closer to screen
+            let turtleNeckThreshold: CGFloat = 1.0 + max(0.05, deadZone)
+            
+            if ratio > turtleNeckThreshold {
+                 isBadPosture = true
+                 // We could differentiate "type" of bad posture in future, 
+                 // but for now, it just triggers the "Slouching" state.
+            }
+        }
 
-        let isBadPosture = slouchAmount > threshold
+        // Calculate severity (based on vertical only for now, or max of both?)
+        // Let's keep severity based on vertical for smooth blur transitions, 
+        // but force it to 1.0 if head size constraint is violated?
+        // Or just map head size ratio to severity too.
+        
+        var severity: Double = 0.0
+        
+        if isBadPosture {
+            // Calculate vertical severity
+            let pastDeadZone = slouchAmount - deadZoneThreshold
+            let remainingRange = max(0.01, calibration.postureRange - deadZoneThreshold)
+            let verticalSeverity = min(1.0, max(0.0, pastDeadZone / remainingRange))
+            
+            severity = Double(verticalSeverity)
+            
+            // If triggered by head size, boost severity to ensure warning appears
+            if calibration.neutralFaceWidth > 0 && currentFaceWidth > 0 {
+                 let ratio = currentFaceWidth / calibration.neutralFaceWidth
+                 let turtleNeckThreshold: CGFloat = 1.0 + max(0.05, deadZone)
+                 if ratio > turtleNeckThreshold {
+                     // Map ratio excess to severity
+                     // e.g. 1.05 -> 0.0, 1.20 -> 1.0
+                     let sizeExcess = ratio - turtleNeckThreshold
+                     let sizeSeverity = min(1.0, max(0.0, sizeExcess / 0.15)) // 15% range beyond threshold
+                     severity = max(severity, Double(sizeSeverity))
+                     
+                     // If purely head-size triggered (and vertical is fine), 
+                     // meaningful severity is needed to trigger blur/overlay.
+                     if severity < 0.1 { severity = 0.5 } 
+                 }
+            }
+        }
 
-        // Calculate severity: how far past the dead zone (0 to 1)
-        let pastDeadZone = slouchAmount - deadZoneThreshold
-        let remainingRange = max(0.01, calibration.postureRange - deadZoneThreshold)
-        let severity = min(1.0, max(0.0, pastDeadZone / remainingRange))
-
-        // Update slouching state for hysteresis
+        // Update hystersis state
         if isBadPosture {
             isCurrentlySlouching = true
         } else if !isBadPosture && severity == 0 {
@@ -379,7 +452,7 @@ class CameraPostureDetector: NSObject, PostureDetector {
         let reading = PostureReading(
             timestamp: Date(),
             isBadPosture: isBadPosture,
-            severity: Double(severity)
+            severity: severity
         )
 
         DispatchQueue.main.async {
