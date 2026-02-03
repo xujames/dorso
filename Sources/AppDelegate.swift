@@ -515,11 +515,12 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Check if calibration exists for the new source
         if isCalibrated {
-            // Existing calibration - start monitoring
+            // Existing calibration - start monitoring (will pause if AirPods not connected)
             startMonitoring()
         } else {
-            // No calibration - start calibration flow
-            startCalibration()
+            // No calibration - pause and wait for user to calibrate
+            // Don't auto-start calibration as it requires async permission and device availability
+            state = .paused(.noProfile)
         }
     }
 
