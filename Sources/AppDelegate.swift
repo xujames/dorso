@@ -1021,6 +1021,12 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             targetBlurRadius = Int32(privacyBlurIntensity * 64)
             warningOverlayManager.targetIntensity = postureWarningIntensity
         }
+
+        // Skip work if nothing is changing
+        let blurNeedsUpdate = currentBlurRadius != targetBlurRadius
+        let overlayNeedsUpdate = warningOverlayManager.currentIntensity != warningOverlayManager.targetIntensity
+        guard blurNeedsUpdate || overlayNeedsUpdate else { return }
+
         warningOverlayManager.updateWarning()
 
         if currentBlurRadius < targetBlurRadius {
