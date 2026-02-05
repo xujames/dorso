@@ -104,6 +104,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     // Detection state - consolidated into PostureEngine types
     var monitoringState = PostureMonitoringState()
     var postureConfig = PostureConfig()
+    private var lastPostureReadingTime: Date?
 
     // Computed properties for backward compatibility
     var isCurrentlySlouching: Bool {
@@ -343,12 +344,29 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     private func handlePostureReading(_ reading: PostureReading) {
         guard state == .monitoring else { return }
 
+        // Use the detector's capture timestamp for consistency
+        let readingTime = reading.timestamp
+
+        // Calculate actual elapsed time since last reading for accurate analytics.
+        // Skip analytics on the first reading (no prior reference point).
+        let actualElapsed: TimeInterval?
+        if let last = lastPostureReadingTime {
+            let raw = readingTime.timeIntervalSince(last)
+            // Clamp: ignore negative deltas (clock adjustment) and cap at 2s
+            // to avoid a single huge chunk after sleep/stall.
+            actualElapsed = min(max(0, raw), 2.0)
+        } else {
+            actualElapsed = nil
+        }
+        lastPostureReadingTime = readingTime
+
         // Use PostureEngine for pure logic
         let result = PostureEngine.processReading(
             reading,
             state: monitoringState,
             config: postureConfig,
-            frameInterval: frameInterval
+            currentTime: readingTime,
+            frameInterval: actualElapsed ?? 0
         )
 
         // Update state
@@ -358,7 +376,9 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         for effect in result.effects {
             switch effect {
             case .trackAnalytics(let interval, let isSlouching):
-                AnalyticsManager.shared.trackTime(interval: interval, isSlouching: isSlouching)
+                if actualElapsed != nil {
+                    AnalyticsManager.shared.trackTime(interval: interval, isSlouching: isSlouching)
+                }
             case .recordSlouchEvent:
                 AnalyticsManager.shared.recordSlouchEvent()
             case .updateUI:
@@ -727,6 +747,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        lastPostureReadingTime = nil
         activeDetector.beginMonitoring(with: calibration, intensity: activeIntensity, deadZone: activeDeadZone)
         state = .monitoring
     }
