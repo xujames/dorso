@@ -23,10 +23,7 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
         let targetScreen = statusItem?.button?.window?.screen ?? NSScreen.main ?? NSScreen.screens.first
 
         if let existingWindow = window {
-            // Move existing window to the correct screen and center it
-            if let screen = targetScreen {
-                centerWindow(existingWindow, on: screen)
-            }
+            // Show existing window where user left it (position is auto-saved)
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.setActivationPolicy(.regular)
             NSApp.activate(ignoringOtherApps: true)
@@ -52,11 +49,15 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
         window.titlebarAppearsTransparent = false
         window.backgroundColor = NSColor.windowBackgroundColor
 
-        // Center on the target screen
-        if let screen = targetScreen {
-            centerWindow(window, on: screen)
-        } else {
-            window.center()
+        // Restore saved window position, or center on status item's screen if no saved position
+        window.setFrameAutosaveName("SettingsWindow")
+        if !window.setFrameUsingName("SettingsWindow") {
+            // No saved position - center on target screen
+            if let screen = targetScreen {
+                centerWindow(window, on: screen)
+            } else {
+                window.center()
+            }
         }
 
         self.window = window

@@ -7,7 +7,7 @@ class CalibrationView: NSView {
     var pulsePhase: CGFloat = 0
     var instructionText: String = "Look at the ring and tap Space"
     var stepText: String = "Step 1 of 4"
-    var hintText: String = "Move your head naturally \u{2022} Tap Space when ready"
+    var hintText: String = "Tap Space while looking at the ring"
     var showRing: Bool = true
     var waitingForAirPods: Bool = false
 
@@ -90,18 +90,88 @@ class CalibrationView: NSView {
         let textRect = NSRect(x: 0, y: bounds.midY - 20, width: bounds.width, height: 50)
         (instructionText as NSString).draw(in: textRect, withAttributes: titleAttrs)
 
-        // Draw hint below
-        let hintRect = NSRect(x: 0, y: bounds.midY - 70, width: bounds.width, height: 30)
-        (hintText as NSString).draw(in: hintRect, withAttributes: hintAttrs)
+        // Draw hint with keycap for Space
+        let hintY = bounds.midY - 70
+        drawHintWithKeycap(
+            prefix: "Tap ",
+            keycap: "Space",
+            suffix: " while looking at the ring",
+            centerY: hintY,
+            textColor: NSColor.cyan,
+            fontSize: 18
+        )
 
-        // Draw escape hint smaller
-        let escapeAttrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 14, weight: .regular),
-            .foregroundColor: NSColor.white.withAlphaComponent(0.5),
-            .paragraphStyle: paragraphStyle
+        // Draw escape hint with keycap for Esc
+        let escapeY = bounds.midY - 110
+        drawHintWithKeycap(
+            prefix: "",
+            keycap: "Esc",
+            suffix: " to skip calibration",
+            centerY: escapeY,
+            textColor: NSColor.white.withAlphaComponent(0.5),
+            fontSize: 14
+        )
+    }
+
+    private func drawHintWithKeycap(prefix: String, keycap: String, suffix: String, centerY: CGFloat, textColor: NSColor, fontSize: CGFloat) {
+        let font = NSFont.systemFont(ofSize: fontSize, weight: .medium)
+        let keycapFont = NSFont.systemFont(ofSize: fontSize - 1, weight: .semibold)
+
+        let textAttrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: textColor
         ]
-        let escapeRect = NSRect(x: 0, y: bounds.midY - 110, width: bounds.width, height: 25)
-        ("Escape to skip calibration" as NSString).draw(in: escapeRect, withAttributes: escapeAttrs)
+        let keycapTextAttrs: [NSAttributedString.Key: Any] = [
+            .font: keycapFont,
+            .foregroundColor: NSColor.white
+        ]
+
+        // Measure each part
+        let prefixSize = (prefix as NSString).size(withAttributes: textAttrs)
+        let keycapTextSize = (keycap as NSString).size(withAttributes: keycapTextAttrs)
+        let suffixSize = (suffix as NSString).size(withAttributes: textAttrs)
+
+        // Keycap padding
+        let keycapPaddingH: CGFloat = 8
+        let keycapPaddingV: CGFloat = 4
+        let keycapWidth = keycapTextSize.width + keycapPaddingH * 2
+        let keycapHeight = keycapTextSize.height + keycapPaddingV * 2
+
+        // Total width
+        let totalWidth = prefixSize.width + keycapWidth + suffixSize.width
+        let startX = (bounds.width - totalWidth) / 2
+
+        // Draw prefix
+        var currentX = startX
+        let prefixPoint = NSPoint(x: currentX, y: centerY)
+        (prefix as NSString).draw(at: prefixPoint, withAttributes: textAttrs)
+        currentX += prefixSize.width
+
+        // Draw keycap background (centered on text baseline)
+        let keycapRect = NSRect(
+            x: currentX,
+            y: centerY - keycapPaddingV,
+            width: keycapWidth,
+            height: keycapHeight
+        )
+        let keycapPath = NSBezierPath(roundedRect: keycapRect, xRadius: 5, yRadius: 5)
+
+        // Keycap style: dark background with subtle border
+        NSColor.white.withAlphaComponent(0.15).setFill()
+        keycapPath.fill()
+        NSColor.white.withAlphaComponent(0.3).setStroke()
+        keycapPath.lineWidth = 1
+        keycapPath.stroke()
+
+        // Draw keycap text (vertically centered in keycap)
+        let keycapTextY = keycapRect.minY + (keycapRect.height - keycapTextSize.height) / 2
+        let keycapTextPoint = NSPoint(x: currentX + keycapPaddingH, y: keycapTextY)
+        (keycap as NSString).draw(at: keycapTextPoint, withAttributes: keycapTextAttrs)
+        currentX += keycapWidth
+
+        // Draw suffix
+        let suffixPoint = NSPoint(x: currentX, y: centerY)
+        (suffix as NSString).draw(at: suffixPoint, withAttributes: textAttrs)
     }
 
     private func drawWaitingForAirPods() {
@@ -193,10 +263,10 @@ class CalibrationWindowController: NSObject {
 
         var name: String {
             switch self {
-            case .topLeft: return "TOP-LEFT"
-            case .topRight: return "TOP-RIGHT"
-            case .bottomLeft: return "BOTTOM-LEFT"
-            case .bottomRight: return "BOTTOM-RIGHT"
+            case .topLeft: return "top-left"
+            case .topRight: return "top-right"
+            case .bottomLeft: return "bottom-left"
+            case .bottomRight: return "bottom-right"
             }
         }
     }
@@ -208,10 +278,9 @@ class CalibrationWindowController: NSObject {
         let corners: [Corner] = [.topLeft, .topRight, .bottomRight, .bottomLeft]
 
         for screenIndex in 0..<NSScreen.screens.count {
-            let screenName = NSScreen.screens.count > 1 ? "Screen \(screenIndex + 1) " : ""
             for corner in corners {
                 steps.append(CalibrationStep(
-                    instruction: "Look at the \(screenName)\(corner.name) corner",
+                    instruction: "Look at the \(corner.name) corner",
                     screenIndex: screenIndex,
                     corner: corner
                 ))
@@ -354,9 +423,14 @@ class CalibrationWindowController: NSObject {
     }
 
     func startAnimation() {
+        // Respect accessibility reduce motion preference
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+
         animationTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { [weak self] _ in
             for view in self?.calibrationViews ?? [] {
-                view.pulsePhase += 0.08
+                if !reduceMotion {
+                    view.pulsePhase += 0.08
+                }
                 view.needsDisplay = true
             }
         }
