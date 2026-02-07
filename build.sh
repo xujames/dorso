@@ -143,6 +143,8 @@ cat > "$CONTENTS/Info.plist" << EOF
     <true/>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleLocalizations</key>
@@ -158,8 +160,19 @@ cat > "$CONTENTS/Info.plist" << EOF
 </plist>
 EOF
 
-# Copy icon if it exists
-if [ -f "$SCRIPT_DIR/AppIcon.icns" ]; then
+# Compile app icon
+# Priority: .icon file (Icon Composer) > .icns file > .iconset folder
+if [ -f "$SCRIPT_DIR/AppIcon.icon/icon.json" ]; then
+    echo "Compiling Icon Composer icon..."
+    xcrun actool "$SCRIPT_DIR/AppIcon.icon" \
+        --compile "$RESOURCES_DIR" \
+        --app-icon AppIcon \
+        --platform macosx \
+        --minimum-deployment-target 13.0 \
+        --include-all-app-icons \
+        --output-partial-info-plist /dev/null \
+        --output-format human-readable-text > /dev/null 2>&1
+elif [ -f "$SCRIPT_DIR/AppIcon.icns" ]; then
     echo "Copying app icon..."
     cp "$SCRIPT_DIR/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 elif [ -d "$SCRIPT_DIR/Posturr.iconset" ]; then
