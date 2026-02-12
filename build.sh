@@ -13,7 +13,7 @@ set -e
 # Configuration
 APP_NAME="Posturr"
 BUNDLE_ID="com.thelazydeveloper.posturr"
-VERSION="1.8.1"
+VERSION="1.8.2"
 BUILD_NUMBER="4"
 MIN_MACOS="13.0"
 
