@@ -454,7 +454,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         }
         screenLockObserver.onScreenUnlocked = { [weak self] in
             Task { @MainActor in
-                self?.handleScreenUnlocked(triggeredByUnlockNotification: true)
+                self?.handleScreenUnlocked()
             }
         }
         screenLockObserver.startObserving()
@@ -885,30 +885,26 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         state = .paused(.screenLocked)
     }
 
-    private func handleScreenUnlocked(triggeredByUnlockNotification: Bool) {
-        if case .paused(.screenLocked) = state {
-            if let previousState = stateBeforeLock {
-                stateBeforeLock = nil
-                switch previousState {
-                case .monitoring:
-                    // Re-enter monitoring via startMonitoring() so detector monitoring
-                    // state/calibration are re-applied after lock pause.
-                    startMonitoring()
-                default:
-                    state = previousState
-                }
-            } else {
+    private func handleScreenUnlocked() {
+        guard case .paused(.screenLocked) = state else { return }
+
+        if let previousState = stateBeforeLock {
+            stateBeforeLock = nil
+            switch previousState {
+            case .monitoring:
                 startMonitoring()
+            default:
+                state = previousState
             }
+        } else {
+            startMonitoring()
         }
 
-        // Wake can arrive before unlock; force a camera session rebuild on real unlock
-        // to recover from stale AV capture pipelines.
-        guard triggeredByUnlockNotification,
-              trackingSource == .camera,
-              state == .monitoring else { return }
-
-        cameraDetector.restartSessionAfterWakeUnlock()
+        // Rebuild the camera session to recover from stale AV capture pipelines
+        // that occur after sleep/wake cycles.
+        if trackingSource == .camera, state == .monitoring {
+            cameraDetector.restartSession()
+        }
     }
 
     // MARK: - Display Configuration

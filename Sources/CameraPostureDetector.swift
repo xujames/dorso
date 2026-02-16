@@ -318,32 +318,21 @@ class CameraPostureDetector: NSObject, PostureDetector {
         }
     }
 
-    /// Rebuild the capture session after wake/unlock to recover from stale camera pipelines.
-    /// Keeps monitoring/calibration state intact (unlike full stop/start).
-    func restartSessionAfterWakeUnlock(retryCount: Int = 0) {
+    /// Tear down and rebuild the capture session to recover from stale camera pipelines
+    /// (e.g. after sleep/wake). Preserves monitoring and calibration state.
+    func restartSession() {
         guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else { return }
 
-        if isStarting {
-            guard retryCount < 8 else {
-                os_log(.error, log: log, "Skipping wake restart: session still starting after retries")
-                return
-            }
+        os_log(.info, log: log, "Restarting camera session")
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-                self?.restartSessionAfterWakeUnlock(retryCount: retryCount + 1)
-            }
-            return
+        if let session = captureSession {
+            session.stopRunning()
+            for input in session.inputs { session.removeInput(input) }
+            for output in session.outputs { session.removeOutput(output) }
         }
 
-        guard isActive else { return }
-
-        os_log(.info, log: log, "Restarting camera session after wake/unlock")
-
-        captureSession?.stopRunning()
-        videoOutput?.setSampleBufferDelegate(nil, queue: nil)
-        captureSession = nil
         videoOutput = nil
-        lastFrameTime = .distantPast
+        captureSession = nil
         isActive = false
         isStarting = true
 
