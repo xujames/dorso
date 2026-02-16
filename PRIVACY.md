@@ -1,10 +1,10 @@
 # Privacy Policy for Dorso
 
-**Last Updated: January 25, 2025**
+**Last Updated: February 16, 2026**
 
 ## Overview
 
-Dorso is a macOS menu bar application that monitors your posture using your computer's camera. Your privacy is important to us, and Dorso is designed with privacy as a core principle.
+Dorso is a macOS menu bar application that monitors your posture using your computer's camera or AirPods. Your privacy is important to us, and Dorso is designed with privacy as a core principle.
 
 ## Data Collection
 
@@ -16,6 +16,12 @@ Dorso is a macOS menu bar application that monitors your posture using your comp
 - Video frames are processed entirely on your device using Apple's Vision framework
 - No images or video are ever stored, recorded, or transmitted
 - Camera data never leaves your computer
+
+### AirPods Usage
+
+- Dorso can use the head tracking sensors in AirPods Pro or AirPods Max to detect posture
+- Motion data is processed entirely on your device using Apple's CoreMotion framework
+- No motion data is ever stored or transmitted
 
 ### No Analytics
 
@@ -40,7 +46,7 @@ Dorso does not integrate with any third-party services or APIs.
 
 ## Data Storage
 
-Dorso does not store any user data. Your calibration settings exist only in memory while the app is running and are not persisted to disk.
+Dorso stores your posture statistics locally on your Mac. This data never leaves your device and can be deleted at any time by removing the app.
 
 ## Children's Privacy
 
