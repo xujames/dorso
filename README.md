@@ -12,19 +12,21 @@ Dorso monitors your posture in real-time using either your Mac's camera or AirPo
 **Join our Discord** to share feedback, get help, suggest features, and connect with other Dorso users!
 
 <p align="center">
-  <img src="assets/dorso-preview.gif" width="640" alt="Dorso demo: slouching triggers screen blur, good posture keeps it clear">
+  <video src="https://github.com/tldev/dorso/raw/main/assets/dorso-preview.mp4" width="640" autoplay loop muted playsinline>
+    Dorso demo: slouching triggers screen blur, good posture keeps it clear
+  </video>
 </p>
 
 ## Screenshots
 
 <p align="center">
-  <img src="assets/dorso_onboarding.jpg" width="320" alt="Onboarding - Choose Tracking Method">
-  <img src="assets/dorso_settings.jpg" width="400" alt="Settings">
+  <img src="assets/dorso_onboarding.png" width="320" alt="Onboarding - Choose Tracking Method">
+  <img src="assets/dorso_settings.png" width="400" alt="Settings">
 </p>
 
 <p align="center">
-  <img src="assets/dorso_menubar.jpg" width="280" alt="Menu Bar">
-  <img src="assets/dorso_analytics.jpg" width="400" alt="Analytics Dashboard">
+  <img src="assets/dorso_menubar.png" width="280" alt="Menu Bar">
+  <img src="assets/dorso_analytics.png" width="400" alt="Analytics Dashboard">
 </p>
 
 ## Features
