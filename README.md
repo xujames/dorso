@@ -12,7 +12,7 @@ Dorso monitors your posture in real-time using either your Mac's camera or AirPo
 **Join our Discord** to share feedback, get help, suggest features, and connect with other Dorso users!
 
 <p align="center">
-  <video src="https://github.com/tldev/dorso/raw/main/assets/dorso-preview.mp4" width="640" autoplay loop muted playsinline>
+  <video src="https://github.com/user-attachments/assets/de02c78b-c6c4-4ddc-9650-320e7267921a" width="640" autoplay loop muted playsinline>
     Dorso demo: slouching triggers screen blur, good posture keeps it clear
   </video>
 </p>
