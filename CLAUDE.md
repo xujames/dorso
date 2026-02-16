@@ -19,7 +19,7 @@ When the user says "ship it", perform the complete release workflow:
 11. **Update Homebrew tap**:
     ```bash
     # Get SHA256
-    gh release view vX.Y.Z --repo tldev/posturr --json assets --jq '.assets[] | select(.name | endswith(".zip")) | .url' | xargs curl -sL | shasum -a 256 | cut -d' ' -f1
+    gh release view vX.Y.Z --repo tldev/dorso --json assets --jq '.assets[] | select(.name | endswith(".zip")) | .url' | xargs curl -sL | shasum -a 256 | cut -d' ' -f1
 
     # Update tap
     cd /tmp && rm -rf homebrew-tap && git clone git@github.com:tldev/homebrew-tap.git
@@ -106,7 +106,7 @@ After each GitHub release, update the Homebrew tap at https://github.com/tldev/h
 
 ```bash
 # Get the SHA256 of the new release ZIP
-gh release view vX.Y.Z --repo tldev/posturr --json assets --jq '.assets[] | select(.name | endswith(".zip")) | .digest'
+gh release view vX.Y.Z --repo tldev/dorso --json assets --jq '.assets[] | select(.name | endswith(".zip")) | .digest'
 
 # Clone via SSH (required for push), update, and push
 cd /tmp && rm -rf homebrew-tap && git clone git@github.com:tldev/homebrew-tap.git
@@ -123,7 +123,7 @@ git add . && git commit -m "Update Dorso to vX.Y.Z" && git push
 For App Store submissions, run these steps after the GitHub release:
 
 ```bash
-cd /Users/tjohnell/projects/posturr
+cd /Users/tjohnell/projects/dorso
 
 # 1. Build for App Store (excludes private APIs)
 ./build.sh --appstore

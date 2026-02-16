@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Camera session startup now verifies the session is actually running and logs errors on failure
 
 ### Acknowledgments
-- Thanks to [@DengNaichen](https://github.com/DengNaichen) for fixing the sleep/wake detection issue in [PR #63](https://github.com/tldev/posturr/pull/63)
+- Thanks to [@DengNaichen](https://github.com/DengNaichen) for fixing the sleep/wake detection issue in [PR #63](https://github.com/tldev/dorso/pull/63)
 
 ## [1.8.2] - 2026-02-12
 
@@ -199,7 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Camera hardware frame rate is now configured directly (not just software throttling)
 
 ### Acknowledgments
-- Thanks to [@cam-br0wn](https://github.com/cam-br0wn) for the original idea in [PR #24](https://github.com/tldev/posturr/pull/24)!
+- Thanks to [@cam-br0wn](https://github.com/cam-br0wn) for the original idea in [PR #24](https://github.com/tldev/dorso/pull/24)!
 
 ## [1.4.6] - 2026-01-29
 

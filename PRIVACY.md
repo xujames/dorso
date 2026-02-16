@@ -53,7 +53,7 @@ If we make changes to this privacy policy, we will update the "Last Updated" dat
 ## Contact
 
 If you have questions about this privacy policy, please open an issue at:
-https://github.com/tjohnell/posturr/issues
+https://github.com/tldev/dorso/issues
 
 ---
 

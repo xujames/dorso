@@ -523,7 +523,7 @@ struct SettingsView: View {
 
                 // Social links
                 HStack(spacing: 4) {
-                    Link(destination: URL(string: "https://github.com/tldev/posturr")!) {
+                    Link(destination: URL(string: "https://github.com/tldev/dorso")!) {
                         GitHubIcon(color: Color.secondary.opacity(0.6))
                             .frame(width: 14, height: 14)
                             .padding(3)

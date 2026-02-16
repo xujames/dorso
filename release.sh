@@ -258,4 +258,4 @@ echo ""
 echo "Files:"
 ls -lh "build/$ZIP_NAME" "build/$DMG_NAME" 2>/dev/null
 echo ""
-echo -e "Release URL: ${CYAN}https://github.com/tldev/posturr/releases/tag/$TAG${NC}"
+echo -e "Release URL: ${CYAN}https://github.com/tldev/dorso/releases/tag/$TAG${NC}"
