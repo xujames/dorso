@@ -889,13 +889,8 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         guard case .paused(.screenLocked) = state else { return }
 
         if let previousState = stateBeforeLock {
+            state = previousState
             stateBeforeLock = nil
-            switch previousState {
-            case .monitoring:
-                startMonitoring()
-            default:
-                state = previousState
-            }
         } else {
             startMonitoring()
         }
