@@ -162,23 +162,43 @@ EOF
 
 # Compile app icon
 # Priority: .icon file (Icon Composer) > .icns file > .iconset folder
+# If actool is unavailable/fails, fall back instead of aborting the build.
+ICON_DONE=false
 if [ -f "$SCRIPT_DIR/AppIcon.icon/icon.json" ]; then
-    echo "Compiling Icon Composer icon..."
-    xcrun actool "$SCRIPT_DIR/AppIcon.icon" \
-        --compile "$RESOURCES_DIR" \
-        --app-icon AppIcon \
-        --platform macosx \
-        --minimum-deployment-target 13.0 \
-        --include-all-app-icons \
-        --output-partial-info-plist /dev/null \
-        --output-format human-readable-text > /dev/null 2>&1
-elif [ -f "$SCRIPT_DIR/AppIcon.icns" ]; then
+    if xcrun --find actool >/dev/null 2>&1; then
+        echo "Compiling Icon Composer icon..."
+        ACTOOL_LOG="$BUILD_DIR/actool.log"
+        if xcrun actool "$SCRIPT_DIR/AppIcon.icon" \
+            --compile "$RESOURCES_DIR" \
+            --app-icon AppIcon \
+            --platform macosx \
+            --minimum-deployment-target 13.0 \
+            --include-all-app-icons \
+            --output-partial-info-plist /dev/null \
+            --output-format human-readable-text >"$ACTOOL_LOG" 2>&1; then
+            ICON_DONE=true
+        else
+            echo -e "${YELLOW}Warning: actool failed. Falling back to AppIcon.icns/iconset.${NC}"
+            echo -e "${YELLOW}See $ACTOOL_LOG for details.${NC}"
+        fi
+    else
+        echo -e "${YELLOW}Warning: actool is unavailable. Falling back to AppIcon.icns/iconset.${NC}"
+    fi
+fi
+
+if [ "$ICON_DONE" = false ] && [ -f "$SCRIPT_DIR/AppIcon.icns" ]; then
     echo "Copying app icon..."
     cp "$SCRIPT_DIR/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
-elif [ -d "$SCRIPT_DIR/Dorso.iconset" ]; then
+    ICON_DONE=true
+fi
+
+if [ "$ICON_DONE" = false ] && [ -d "$SCRIPT_DIR/Dorso.iconset" ]; then
     echo "Converting iconset to icns..."
     iconutil -c icns -o "$RESOURCES_DIR/AppIcon.icns" "$SCRIPT_DIR/Dorso.iconset"
-else
+    ICON_DONE=true
+fi
+
+if [ "$ICON_DONE" = false ]; then
     echo -e "${YELLOW}Warning: No app icon found. The app will use default icon.${NC}"
 fi
 
@@ -251,6 +271,14 @@ fi
 
 # Set executable permission
 chmod +x "$MACOS_DIR/$APP_NAME"
+
+# Remove extended attributes that can cause codesign to fail
+echo "Removing extended attributes..."
+if command -v xattr >/dev/null 2>&1; then
+    if ! xattr -cr "$APP_BUNDLE"; then
+        echo -e "${YELLOW}Warning: Failed to clear extended attributes. Codesign may fail.${NC}"
+    fi
+fi
 
 # Ad-hoc sign the app bundle for macOS Gatekeeper compatibility
 echo "Signing app bundle..."
