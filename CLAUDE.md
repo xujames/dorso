@@ -16,17 +16,6 @@ When the user says "ship it", perform the complete release workflow:
 8. **Update README.md** contributors section if applicable
 9. **Commit and push** changelog/readme updates
 10. **Comment on PR/issue** thanking contributor and linking to release
-11. **Update Homebrew tap**:
-    ```bash
-    # Get SHA256
-    gh release view vX.Y.Z --repo tldev/dorso --json assets --jq '.assets[] | select(.name | endswith(".zip")) | .url' | xargs curl -sL | shasum -a 256 | cut -d' ' -f1
-
-    # Update tap
-    cd /tmp && rm -rf homebrew-tap && git clone git@github.com:tldev/homebrew-tap.git
-    cd homebrew-tap
-    # Update version and sha256 in Casks/dorso.rb
-    git add . && git commit -m "Update Dorso to vX.Y.Z" && git push
-    ```
 
 ### GitHub Release (Direct Distribution)
 
@@ -100,24 +89,6 @@ After updating the GitHub release notes, also update `CHANGELOG.md` with a new e
 - Use Keep a Changelog format with `### Added`, `### Changed`, `### Fixed` sections as appropriate
 - Include the release date in YYYY-MM-DD format
 - Commit and push the changelog update
-
-### Update Homebrew Cask
-After each GitHub release, update the Homebrew tap at https://github.com/tldev/homebrew-tap:
-
-```bash
-# Get the SHA256 of the new release ZIP
-gh release view vX.Y.Z --repo tldev/dorso --json assets --jq '.assets[] | select(.name | endswith(".zip")) | .digest'
-
-# Clone via SSH (required for push), update, and push
-cd /tmp && rm -rf homebrew-tap && git clone git@github.com:tldev/homebrew-tap.git
-cd homebrew-tap
-
-# Edit Casks/dorso.rb - update version and sha256
-# version "X.Y.Z"
-# sha256 "<new-sha256-without-sha256:-prefix>"
-
-git add . && git commit -m "Update Dorso to vX.Y.Z" && git push
-```
 
 ### App Store Release
 For App Store submissions, run these steps after the GitHub release:
