@@ -99,7 +99,7 @@
 "calibration.corner.bottomRight" = "inférieur droit";
 /* {BracedText} is rendered as a keyboard keycap — keep the braces and English key name intact */
 "calibration.hint.tapSpace" = "Appuyez sur {Space} en regardant l'anneau";
-"calibration.hint.escToSkip" = "{Esc} pour ignorer la calibration";
+"calibration.hint.escToSkip" = "{Esc} pour annuler la calibration";
 "calibration.airpods.putIn" = "Mettez vos AirPods";
 "calibration.airpods.autoBegin" = "La calibration commencera automatiquement";
 "calibration.airpods.escToCancel" = "Appuyez sur {Esc} pour annuler";
@@ -108,10 +108,19 @@
 
 "settings.title" = "Réglages";
 "settings.tracking" = "Suivi";
+"settings.tracking.help" = "Manuel utilise une seule source. Automatique bascule entre Caméra et AirPods selon la disponibilité, en privilégiant votre source préférée.";
 "settings.noCameras" = "Aucune caméra";
 "settings.connected" = "Connecté";
 "settings.notConnected" = "Non connecté";
 "settings.recalibrate" = "Recalibrer";
+"settings.mode.manual" = "Manuel";
+"settings.mode.automatic" = "Automatique";
+"settings.preferred" = "Préféré";
+"settings.active" = "Actif";
+"settings.calibrated" = "Calibré";
+"settings.notCalibrated" = "Non calibré";
+"settings.preferredNeedsCalibration" = "L'appareil préféré doit être calibré";
+"settings.calibratePreferred" = "Calibrer";
 "settings.profile" = "Profil";
 "settings.profile.help" = "Enregistrez différentes configurations pour différentes situations. Changez de profil pour appliquer instantanément tous les réglages.";
 "settings.profile.new" = "Nouveau";
@@ -125,7 +134,7 @@
 "settings.warning" = "Avertissement";
 "settings.warning.help" = "Flou obscurcit l'écran, Halo affiche un halo sur les bords, Bordure affiche des bordures colorées, Plein remplit l'écran. Aucun désactive les avertissements visuels.";
 "settings.deadZone" = "Zone morte";
-"settings.deadZone.help" = "L'amplitude de mouvement autorisée avant le déclenchement de l'avertissement. Une zone morte détendue permet plus de mouvements naturels.";
+"settings.deadZone.help" = "L'amplitude de mouvement autorisée avant le déclenchement de l'avertissement. Une zone morte Détendue ou Souple permet plus de mouvements naturels.";
 "settings.intensity" = "Intensité";
 "settings.intensity.help" = "La vitesse à laquelle l'avertissement augmente lorsque vous vous avachissez au-delà de la zone morte.";
 "settings.delay" = "Délai";
@@ -150,32 +159,32 @@
 "settings.joinDiscord" = "Rejoindre Discord";
 
 // Settings slider labels
-"settings.deadZone.strict" = "Strict";
-"settings.deadZone.tight" = "Serré";
-"settings.deadZone.medium" = "Moyen";
-"settings.deadZone.relaxed" = "Détendu";
+"settings.deadZone.strict" = "Stricte";
+"settings.deadZone.tight" = "Serrée";
+"settings.deadZone.medium" = "Moyenne";
+"settings.deadZone.relaxed" = "Détendue";
 "settings.deadZone.loose" = "Souple";
-"settings.intensity.gentle" = "Doux";
-"settings.intensity.easy" = "Léger";
-"settings.intensity.medium" = "Moyen";
+"settings.intensity.gentle" = "Douce";
+"settings.intensity.easy" = "Légère";
+"settings.intensity.medium" = "Moyenne";
 "settings.intensity.firm" = "Ferme";
-"settings.intensity.aggressive" = "Agressif";
+"settings.intensity.aggressive" = "Agressive";
 
 // MARK: - Analytics (AnalyticsWindow.swift)
 
 "analytics.title" = "Statistiques";
-"analytics.header" = "Statistiques de posture";
+"analytics.header" = "Statistiques des postures";
 "analytics.tagline" = "Suivez vos habitudes et votre amélioration au fil du temps";
 "analytics.todayScore" = "Score du jour";
 "analytics.monitoringTime" = "Temps de suivi";
 "analytics.slouchDuration" = "Durée d'avachissement";
-"analytics.slouchEvents" = "Épisodes de mauvaise posture";
+"analytics.slouchEvents" = "Nombre de mauvaises postures";
 "analytics.last7Days" = "7 derniers jours";
 
 // MARK: - Onboarding (OnboardingWindow.swift)
 
 "onboarding.title" = "Bienvenue dans Dorso";
-"onboarding.subtitle" = "Choisissez comment suivre votre posture";
+"onboarding.subtitle" = "Choisissez comment surveiller votre posture";
 "onboarding.selectCamera" = "Sélectionner la caméra";
 "onboarding.pairedAirPods" = "AirPods jumelés";
 "onboarding.unavailable" = "Indisponible";

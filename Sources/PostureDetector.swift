@@ -4,7 +4,7 @@ import AppKit
 // MARK: - Posture Reading
 
 /// Represents a single posture measurement from any detection source
-struct PostureReading {
+struct PostureReading: Equatable {
     let timestamp: Date
     let isBadPosture: Bool
     let severity: Double  // 0.0 (good) to 1.0 (very bad)
@@ -110,6 +110,13 @@ enum TrackingSource: String, Codable, CaseIterable, Identifiable {
             return L("trackingSource.camera.requirement")
         case .airpods:
             return L("trackingSource.airpods.requirement")
+        }
+    }
+
+    var other: TrackingSource {
+        switch self {
+        case .camera: return .airpods
+        case .airpods: return .camera
         }
     }
 }

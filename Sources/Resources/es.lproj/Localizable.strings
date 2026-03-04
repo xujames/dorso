@@ -55,8 +55,8 @@
 
 // MARK: - Detection Mode (Models.swift)
 
-"detectionMode.responsive" = "Reactivo";
-"detectionMode.balanced" = "Equilibrado";
+"detectionMode.responsive" = "Reactiva";
+"detectionMode.balanced" = "Equilibrada";
 "detectionMode.performance" = "Rendimiento";
 
 // MARK: - Tracking Source (PostureDetector.swift)
@@ -108,10 +108,19 @@
 
 "settings.title" = "Ajustes";
 "settings.tracking" = "Seguimiento";
+"settings.tracking.help" = "Manual usa una fuente. Automático cambia entre Cámara y AirPods según disponibilidad, usando tu fuente preferida cuando sea posible.";
 "settings.noCameras" = "Sin cámaras";
 "settings.connected" = "Conectado";
 "settings.notConnected" = "No conectado";
 "settings.recalibrate" = "Recalibrar";
+"settings.mode.manual" = "Manual";
+"settings.mode.automatic" = "Automático";
+"settings.preferred" = "Preferido";
+"settings.active" = "Activo";
+"settings.calibrated" = "Calibrado";
+"settings.notCalibrated" = "Sin calibrar";
+"settings.preferredNeedsCalibration" = "El dispositivo preferido necesita calibración";
+"settings.calibratePreferred" = "Calibrar";
 "settings.profile" = "Perfil";
 "settings.profile.help" = "Guarda diferentes configuraciones para diferentes situaciones. Cambia de perfil para aplicar instantáneamente todos los ajustes.";
 "settings.profile.new" = "Nuevo";
@@ -127,11 +136,11 @@
 "settings.deadZone" = "Tolerancia";
 "settings.deadZone.help" = "Cuánto puedes moverte antes de que se active el aviso. Una zona muerta relajada permite más movimiento natural.";
 "settings.intensity" = "Intensidad";
-"settings.intensity.help" = "La rapidez con la que aumenta el aviso al encorvarte más allá de la zona muerta.";
+"settings.intensity.help" = "La rapidez con la que aumenta el aviso cuando te encorvas más allá de la zona muerta.";
 "settings.delay" = "Retraso";
 "settings.delay.help" = "Período de gracia antes de que se active el aviso. Permite miradas breves al teclado sin activarlo.";
 "settings.detection" = "Detección";
-"settings.detection.help" = "Equilibra la capacidad de respuesta y la batería. Reactivo detecta rápido, Rendimiento ahorra batería.";
+"settings.detection.help" = "Equilibrio entre capacidad de respuesta y duración de la batería. Reactiva detecta rápido, Rendimienta ahorra batería.";
 "settings.launchAtLogin" = "Iniciar al arrancar";
 "settings.launchAtLogin.help" = "Iniciar Dorso automáticamente al iniciar sesión";
 "settings.showInDock" = "Mostrar en el dock";
@@ -164,12 +173,12 @@
 // MARK: - Analytics (AnalyticsWindow.swift)
 
 "analytics.title" = "Estadísticas";
-"analytics.header" = "Estadísticas de postura";
+"analytics.header" = "Estadísticas de posturas";
 "analytics.tagline" = "Registra tus hábitos y mejora con el tiempo";
 "analytics.todayScore" = "Puntuación de hoy";
 "analytics.monitoringTime" = "Tiempo de monitoreo";
 "analytics.slouchDuration" = "Tiempo encorvado";
-"analytics.slouchEvents" = "Episodios de mala postura";
+"analytics.slouchEvents" = "Episodios de malas posturas";
 "analytics.last7Days" = "Últimos 7 días";
 
 // MARK: - Onboarding (OnboardingWindow.swift)
