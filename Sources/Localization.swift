@@ -1,11 +1,12 @@
 import Foundation
 
 private var localizationBundle: Bundle {
-    #if SWIFT_PACKAGE
+    // In an app bundle, .lproj files live in Contents/Resources/ (Bundle.main).
+    // SwiftPM's Bundle.module only works when the .build directory exists (dev/test).
+    if Bundle.main.bundlePath.hasSuffix(".app") {
+        return Bundle.main
+    }
     return Bundle.module
-    #else
-    return Bundle.main
-    #endif
 }
 
 private func localizedString(_ key: String) -> String {
