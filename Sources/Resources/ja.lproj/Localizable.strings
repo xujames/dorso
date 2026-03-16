@@ -5,6 +5,7 @@
 "menu.status.starting" = "状態: 起動中...";
 "menu.enable" = "有効にする";
 "menu.recalibrate" = "再キャリブレーション";
+"menu.support" = "サポート";
 "menu.analytics" = "統計";
 "menu.settings" = "設定";
 "menu.quit" = "終了";
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "カメラを使用できません";
 "alert.cameraNotAvailable.message" = "カメラが接続されていること、カメラへのアクセスが許可されていることを確認してください。";
 "alert.tryAgain" = "再試行";
+"support.title" = "Dorsoを応援";
+"support.message" = "Dorsoが姿勢の改善に役立ち、応援したいと思っていただけたら、コーヒーをごちそうしてください。";
+"support.button" = "コーヒーをおごる";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 

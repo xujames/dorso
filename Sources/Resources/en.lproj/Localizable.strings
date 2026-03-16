@@ -5,6 +5,7 @@
 "menu.status.starting" = "Status: Starting...";
 "menu.enable" = "Enable";
 "menu.recalibrate" = "Recalibrate";
+"menu.support" = "Support";
 "menu.analytics" = "Analytics";
 "menu.settings" = "Settings";
 "menu.quit" = "Quit";
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "Camera Not Available";
 "alert.cameraNotAvailable.message" = "Please make sure your camera is connected and camera access is granted.";
 "alert.tryAgain" = "Try Again";
+"support.title" = "Support Dorso";
+"support.message" = "If Dorso has helped you with your posture and you want to show some support, please buy me a coffee.";
+"support.button" = "Buy Me a Coffee";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 

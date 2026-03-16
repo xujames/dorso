@@ -734,6 +734,30 @@ final class AppDelegateTrackingIntegrationTests: XCTestCase {
     }
 
     @MainActor
+    func testShowSupportCreatesSupportWindow() {
+        let appDelegate = AppDelegate()
+
+        appDelegate.showSupport()
+
+        XCTAssertNotNil(appDelegate.supportWindowController.window)
+        appDelegate.supportWindowController.close()
+    }
+
+    @MainActor
+    func testOpenSupportPageOpensSupportURL() {
+        let appDelegate = AppDelegate()
+
+        var openedURL: URL?
+        appDelegate.openSupportURLHandler = { url in
+            openedURL = url
+        }
+
+        appDelegate.openSupportPage()
+
+        XCTAssertEqual(openedURL?.absoluteString, "https://buymeacoffee.com/tjohnell")
+    }
+
+    @MainActor
     func testCalibrationStartFailedForCameraWithRetryDecisionExecutesRetryIntent() async {
         let appDelegate = AppDelegate()
         appDelegate.syncDetectorToStateOverride = {}

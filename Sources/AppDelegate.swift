@@ -133,6 +133,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     var showInDock = false
     var pauseOnTheGo = false
     var settingsWindowController = SettingsWindowController()
+    var supportWindowController = SupportWindowController()
     var analyticsWindowController: AnalyticsWindowController?
     var onboardingWindowController: OnboardingWindowController?
 
@@ -207,6 +208,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     var calibrationPermissionDeniedAlertDecision: ((TrackingSource) -> Bool)?
     var cameraCalibrationRetryAlertDecision: ((String?) -> Bool)?
     var openPrivacySettingsHandler: (() -> Void)?
+    var openSupportURLHandler: ((URL) -> Void)?
     var retryCalibrationHandler: (() -> Void)?
     var beginMonitoringSessionHandler: (() -> Void)?
     var showOnboardingHandler: (() -> Void)?
@@ -461,6 +463,11 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.openSettings()
             }
         }
+        menuBarManager.onOpenSupport = { [weak self] in
+            Task { @MainActor in
+                self?.showSupport()
+            }
+        }
         menuBarManager.onQuit = { [weak self] in
             Task { @MainActor in
                 self?.quit()
@@ -487,10 +494,38 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         settingsWindowController.showSettings(appDelegate: self, fromStatusItem: menuBarManager.statusItem)
     }
 
+    func showSupport() {
+        supportWindowController.showSupport(appDelegate: self, fromStatusItem: menuBarManager.statusItem)
+    }
+
     private func quit() {
         cameraDetector.stop()
         airPodsDetector.stop()
         NSApplication.shared.terminate(nil)
+    }
+
+    func openSupportPage() {
+        guard let url = URL(string: "https://buymeacoffee.com/tjohnell") else { return }
+
+        if let openSupportURLHandler {
+            openSupportURLHandler(url)
+            return
+        }
+
+        NSWorkspace.shared.open(url)
+    }
+
+    func restoreAccessoryActivationPolicyIfNeeded(excluding windowToIgnore: NSWindow? = nil) {
+        guard !showInDock else { return }
+
+        let hasOtherVisibleWindows = NSApp.windows.contains { window in
+            guard window != windowToIgnore else { return false }
+            return window.isVisible && !window.isMiniaturized
+        }
+
+        if !hasOtherVisibleWindows {
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 
     // MARK: - Initial Setup Flow

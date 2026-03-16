@@ -52,9 +52,8 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        // Only hide from Dock if user hasn't enabled "Show in Dock"
-        if let appDelegate = appDelegate, !appDelegate.showInDock {
-            NSApp.setActivationPolicy(.accessory)
+        if let window = notification.object as? NSWindow {
+            appDelegate?.restoreAccessoryActivationPolicyIfNeeded(excluding: window)
         }
         appDelegate?.onCalibrationComplete = nil
         appDelegate?.onActiveSourceChanged = nil
@@ -73,4 +72,3 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window?.close()
     }
 }
-

@@ -5,6 +5,7 @@
 "menu.status.starting" = "Estado: Iniciando...";
 "menu.enable" = "Activar";
 "menu.recalibrate" = "Recalibrar";
+"menu.support" = "Apoyar";
 "menu.analytics" = "Estadísticas";
 "menu.settings" = "Ajustes";
 "menu.quit" = "Salir";
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "Cámara no disponible";
 "alert.cameraNotAvailable.message" = "Asegúrate de que la cámara está conectada y el acceso a la cámara está concedido.";
 "alert.tryAgain" = "Reintentar";
+"support.title" = "Apoya a Dorso";
+"support.message" = "Si Dorso te ha ayudado con tu postura y quieres mostrar tu apoyo, por favor invítame a un café.";
+"support.button" = "Invítame a un café";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 

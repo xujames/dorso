@@ -5,6 +5,7 @@
 "menu.status.starting" = "Status: Wird gestartet...";
 "menu.enable" = "Aktivieren";
 "menu.recalibrate" = "Neu kalibrieren";
+"menu.support" = "Unterstützen";
 "menu.analytics" = "Statistiken";
 "menu.settings" = "Einstellungen";
 "menu.quit" = "Beenden";
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "Kamera nicht verfügbar";
 "alert.cameraNotAvailable.message" = "Stellen Sie sicher, dass die Kamera angeschlossen und der Kamerazugriff gewährt ist.";
 "alert.tryAgain" = "Erneut versuchen";
+"support.title" = "Dorso unterstützen";
+"support.message" = "Wenn Dorso Ihnen mit Ihrer Haltung geholfen hat und Sie Ihre Unterstützung zeigen möchten, spendieren Sie mir bitte einen Kaffee.";
+"support.button" = "Spendiere mir einen Kaffee";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 
