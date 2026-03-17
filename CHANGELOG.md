@@ -5,6 +5,25 @@ All notable changes to Dorso will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.1] - 2026-03-16
+
+### Added
+- Added a new Support menu item in the menu bar with a small support window linking to Buy Me a Coffee
+
+### Fixed
+- Kept Dorso in regular app mode while other app windows are still open when closing the new support window or Settings
+
+## [1.11.0] - 2026-03-13
+
+### Added
+- AirPods 4 with ANC support — now correctly detected as compatible using Bluetooth hardware product IDs instead of device name matching
+
+### Fixed
+- AirPods 4 with ANC no longer shows "No motion sensors" in the device list
+
+### Acknowledgments
+- Thanks to [@shencangsheng](https://github.com/shencangsheng) for reporting the AirPods 4 detection issue (#74)
+
 ## [1.10.4] - 2026-03-04
 
 ### Fixed

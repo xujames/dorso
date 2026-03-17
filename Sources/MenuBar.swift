@@ -14,6 +14,7 @@ final class MenuBarManager {
     var onRecalibrate: (() -> Void)?
     var onShowAnalytics: (() -> Void)?
     var onOpenSettings: (() -> Void)?
+    var onOpenSupport: (() -> Void)?
     var onQuit: (() -> Void)?
 
     func setup() {
@@ -44,6 +45,12 @@ final class MenuBarManager {
         menu.addItem(recalibrateMenuItem)
 
         menu.addItem(NSMenuItem.separator())
+
+        // Support
+        let supportItem = NSMenuItem(title: L("menu.support"), action: #selector(handleOpenSupport), keyEquivalent: "")
+        supportItem.target = self
+        supportItem.image = NSImage(systemSymbolName: "heart", accessibilityDescription: L("menu.support"))
+        menu.addItem(supportItem)
 
         // Analytics
         let statsItem = NSMenuItem(title: L("menu.analytics"), action: #selector(handleShowAnalytics), keyEquivalent: "a")
@@ -113,6 +120,10 @@ final class MenuBarManager {
 
     @objc private func handleOpenSettings() {
         onOpenSettings?()
+    }
+
+    @objc private func handleOpenSupport() {
+        onOpenSupport?()
     }
 
     @objc private func handleQuit() {

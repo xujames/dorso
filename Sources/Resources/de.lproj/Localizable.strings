@@ -5,6 +5,7 @@
 "menu.status.starting" = "Status: Wird gestartet...";
 "menu.enable" = "Aktivieren";
 "menu.recalibrate" = "Neu kalibrieren";
+"menu.support" = "Unterstützen";
 "menu.analytics" = "Statistiken";
 "menu.settings" = "Einstellungen";
 "menu.quit" = "Beenden";
@@ -64,7 +65,7 @@
 "trackingSource.camera" = "Kamera";
 "trackingSource.airpods" = "AirPods";
 "trackingSource.camera.description" = "Verwendet die Kamera zur Erfassung der Kopfposition. Funktioniert mit jeder Mac-Kamera.";
-"trackingSource.airpods.description" = "Verwendet Bewegungssensoren zur Erkennung der Kopfneigung. Erfordert AirPods Pro, Max oder 3. Generation.";
+"trackingSource.airpods.description" = "Verwendet Bewegungssensoren zur Erkennung der Kopfneigung. Erfordert AirPods Pro, Max, 3. Gen. oder 4 mit ANC.";
 "trackingSource.camera.requirement" = "Erfordert Kamerazugriff";
 "trackingSource.airpods.requirement" = "Erfordert macOS 14+ und kompatible AirPods";
 
@@ -75,7 +76,7 @@
 "airpods.requiresMacOS14" = "Erfordert macOS 14.0 oder neuer";
 "airpods.noCompatibleConnected" = "Keine kompatiblen AirPods verbunden";
 "airpods.failedCreateManager" = "Bewegungsmanager konnte nicht erstellt werden";
-"airpods.noCompatiblePaired" = "Keine kompatiblen AirPods gekoppelt. Bitte koppeln Sie AirPods Pro, Max oder 3. Generation.";
+"airpods.noCompatiblePaired" = "Keine kompatiblen AirPods gekoppelt. Bitte koppeln Sie AirPods Pro, Max, 3. Gen. oder 4 mit ANC.";
 
 // MARK: - Alerts (AppDelegate.swift)
 
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "Kamera nicht verfügbar";
 "alert.cameraNotAvailable.message" = "Stellen Sie sicher, dass die Kamera angeschlossen und der Kamerazugriff gewährt ist.";
 "alert.tryAgain" = "Erneut versuchen";
+"support.title" = "Dorso unterstützen";
+"support.message" = "Wenn Dorso Ihnen mit Ihrer Haltung geholfen hat und Sie Ihre Unterstützung zeigen möchten, spendieren Sie mir bitte einen Kaffee.";
+"support.button" = "Spendiere mir einen Kaffee";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 

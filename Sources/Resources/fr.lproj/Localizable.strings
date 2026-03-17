@@ -5,6 +5,7 @@
 "menu.status.starting" = "État : Démarrage...";
 "menu.enable" = "Activer";
 "menu.recalibrate" = "Recalibrer";
+"menu.support" = "Soutenir";
 "menu.analytics" = "Statistiques";
 "menu.settings" = "Réglages";
 "menu.quit" = "Quitter";
@@ -64,7 +65,7 @@
 "trackingSource.camera" = "Caméra";
 "trackingSource.airpods" = "AirPods";
 "trackingSource.camera.description" = "Utilise la caméra pour suivre la position de la tête. Fonctionne avec toute caméra Mac.";
-"trackingSource.airpods.description" = "Utilise les capteurs de mouvement pour détecter l'inclinaison de la tête. Nécessite des AirPods Pro, Max ou 3e génération.";
+"trackingSource.airpods.description" = "Utilise les capteurs de mouvement pour détecter l'inclinaison de la tête. Nécessite des AirPods Pro, Max, 3e gén. ou 4 avec ANC.";
 "trackingSource.camera.requirement" = "Nécessite l'accès à la caméra";
 "trackingSource.airpods.requirement" = "Nécessite macOS 14+ et des AirPods compatibles";
 
@@ -75,7 +76,7 @@
 "airpods.requiresMacOS14" = "Nécessite macOS 14.0 ou ultérieur";
 "airpods.noCompatibleConnected" = "Aucuns AirPods compatibles connectés";
 "airpods.failedCreateManager" = "Échec de la création du gestionnaire de mouvement";
-"airpods.noCompatiblePaired" = "Aucuns AirPods compatibles jumelés. Veuillez jumeler des AirPods Pro, Max ou 3e génération.";
+"airpods.noCompatiblePaired" = "Aucuns AirPods compatibles jumelés. Veuillez jumeler des AirPods Pro, Max, 3e gén. ou 4 avec ANC.";
 
 // MARK: - Alerts (AppDelegate.swift)
 
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "Caméra non disponible";
 "alert.cameraNotAvailable.message" = "Vérifiez que la caméra est connectée et que l'accès à la caméra est autorisé.";
 "alert.tryAgain" = "Réessayer";
+"support.title" = "Soutenir Dorso";
+"support.message" = "Si Dorso vous a aidé avec votre posture et que vous voulez montrer votre soutien, offrez-moi un café.";
+"support.button" = "Offrez-moi un café";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 

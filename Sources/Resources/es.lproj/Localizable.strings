@@ -5,6 +5,7 @@
 "menu.status.starting" = "Estado: Iniciando...";
 "menu.enable" = "Activar";
 "menu.recalibrate" = "Recalibrar";
+"menu.support" = "Apoyar";
 "menu.analytics" = "Estadísticas";
 "menu.settings" = "Ajustes";
 "menu.quit" = "Salir";
@@ -64,7 +65,7 @@
 "trackingSource.camera" = "Cámara";
 "trackingSource.airpods" = "AirPods";
 "trackingSource.camera.description" = "Usa la cámara para rastrear la posición de la cabeza. Funciona con cualquier cámara de Mac.";
-"trackingSource.airpods.description" = "Usa sensores de movimiento para detectar la inclinación de la cabeza. Requiere AirPods Pro, Max o de 3.ª generación.";
+"trackingSource.airpods.description" = "Usa sensores de movimiento para detectar la inclinación de la cabeza. Requiere AirPods Pro, Max, 3.ª gen. o 4 con ANC.";
 "trackingSource.camera.requirement" = "Requiere acceso a la cámara";
 "trackingSource.airpods.requirement" = "Requiere macOS 14+ y AirPods compatibles";
 
@@ -75,7 +76,7 @@
 "airpods.requiresMacOS14" = "Requiere macOS 14.0 o posterior";
 "airpods.noCompatibleConnected" = "No hay AirPods compatibles conectados";
 "airpods.failedCreateManager" = "Error al crear el gestor de movimiento";
-"airpods.noCompatiblePaired" = "No hay AirPods compatibles vinculados. Vincula unos AirPods Pro, Max o de 3.ª generación.";
+"airpods.noCompatiblePaired" = "No hay AirPods compatibles vinculados. Vincula unos AirPods Pro, Max, 3.ª gen. o 4 con ANC.";
 
 // MARK: - Alerts (AppDelegate.swift)
 
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "Cámara no disponible";
 "alert.cameraNotAvailable.message" = "Asegúrate de que la cámara está conectada y el acceso a la cámara está concedido.";
 "alert.tryAgain" = "Reintentar";
+"support.title" = "Apoya a Dorso";
+"support.message" = "Si Dorso te ha ayudado con tu postura y quieres mostrar tu apoyo, por favor invítame a un café.";
+"support.button" = "Invítame a un café";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 

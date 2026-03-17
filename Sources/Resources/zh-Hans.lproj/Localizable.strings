@@ -5,6 +5,7 @@
 "menu.status.starting" = "状态：启动中...";
 "menu.enable" = "启用";
 "menu.recalibrate" = "重新校准";
+"menu.support" = "支持";
 "menu.analytics" = "统计";
 "menu.settings" = "设置";
 "menu.quit" = "退出";
@@ -64,7 +65,7 @@
 "trackingSource.camera" = "摄像头";
 "trackingSource.airpods" = "AirPods";
 "trackingSource.camera.description" = "使用摄像头追踪头部位置。适用于任何 Mac 摄像头。";
-"trackingSource.airpods.description" = "使用运动传感器检测头部倾斜。需要 AirPods Pro、Max 或第三代。";
+"trackingSource.airpods.description" = "使用运动传感器检测头部倾斜。需要 AirPods Pro、Max、第三代或带 ANC 的第四代。";
 "trackingSource.camera.requirement" = "需要摄像头访问权限";
 "trackingSource.airpods.requirement" = "需要 macOS 14 或更高版本及兼容的 AirPods";
 
@@ -75,7 +76,7 @@
 "airpods.requiresMacOS14" = "需要 macOS 14.0 或更高版本";
 "airpods.noCompatibleConnected" = "未连接兼容的 AirPods";
 "airpods.failedCreateManager" = "无法创建运动管理器";
-"airpods.noCompatiblePaired" = "未配对兼容的 AirPods。请配对 AirPods Pro、Max 或第三代。";
+"airpods.noCompatiblePaired" = "未配对兼容的 AirPods。请配对 AirPods Pro、Max、第三代或带 ANC 的第四代。";
 
 // MARK: - Alerts (AppDelegate.swift)
 
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "摄像头不可用";
 "alert.cameraNotAvailable.message" = "请确保摄像头已连接并已授予摄像头访问权限。";
 "alert.tryAgain" = "重试";
+"support.title" = "支持 Dorso";
+"support.message" = "如果 Dorso 帮助你改善了坐姿，并且你愿意表达支持，请我喝杯咖啡。";
+"support.button" = "请我喝杯咖啡";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 

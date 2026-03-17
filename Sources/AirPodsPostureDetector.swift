@@ -5,6 +5,37 @@ import os.log
 
 private let log = OSLog(subsystem: "com.thelazydeveloper.dorso", category: "AirPodsDetector")
 
+// MARK: - AirPods Product ID Detection
+
+#if !APP_STORE
+/// Private IOBluetooth API to access Bluetooth product/vendor IDs
+@objc private protocol IOBluetoothDeviceIdentifiers {
+    @objc optional var productID: UInt32 { get }
+    @objc optional var vendorID: UInt32 { get }
+}
+
+private let appleVendorID: UInt32 = 0x004C
+
+/// Apple AirPods product IDs that have motion sensors (head tracking capable)
+private let compatibleProductIDs: Set<UInt32> = [
+    0x200E,  // AirPods Pro (1st gen)
+    0x2014,  // AirPods Pro (2nd gen) Lightning
+    0x2030,  // AirPods Pro (2nd gen) USB-C
+    0x2013,  // AirPods (3rd gen) Lightning
+    0x2024,  // AirPods (3rd gen) MagSafe
+    0x200A,  // AirPods Max (1st gen)
+    0x2028,  // AirPods Max (2nd gen / USB-C)
+    0x2036,  // AirPods 4 with ANC
+]
+
+/// Apple AirPods product IDs without motion sensors
+private let incompatibleProductIDs: Set<UInt32> = [
+    0x2002,  // AirPods (1st gen)
+    0x200F,  // AirPods (2nd gen)
+    0x2033,  // AirPods 4 (standard)
+]
+#endif
+
 /// Represents a paired AirPods device
 struct PairedAirPods {
     let name: String
@@ -168,16 +199,48 @@ class AirPodsPostureDetector: NSObject, PostureDetector {
             // Check if it's AirPods
             guard lowercaseName.contains("airpods") else { continue }
 
-            // Determine compatibility (Pro, Max, and 3rd gen have motion sensors)
-            let isCompatible = lowercaseName.contains("pro") ||
-                               lowercaseName.contains("max") ||
-                               lowercaseName.contains("3") ||
-                               lowercaseName.contains("4")
-
+            let isCompatible = checkCompatibility(device: device, lowercaseName: lowercaseName)
             airPodsList.append(PairedAirPods(name: name, isCompatible: isCompatible))
         }
 
         return airPodsList
+    }
+
+    /// Check if an AirPods device has motion sensors.
+    /// Uses Bluetooth product ID when available (direct distribution),
+    /// falls back to name-based detection for App Store builds.
+    private func checkCompatibility(device: IOBluetoothDevice, lowercaseName: String) -> Bool {
+        #if !APP_STORE
+        let identifiable = unsafeBitCast(device, to: IOBluetoothDeviceIdentifiers.self)
+        if let vendorID = identifiable.vendorID, let productID = identifiable.productID,
+           vendorID == appleVendorID {
+            os_log(.debug, log: log, "AirPods '%{public}@' productID=0x%04X", device.name ?? "", productID)
+            if compatibleProductIDs.contains(productID) { return true }
+            if incompatibleProductIDs.contains(productID) { return false }
+            // Unknown product ID — log it so we can add support later
+            os_log(.info, log: log, "Unknown AirPods productID 0x%04X for '%{public}@', falling back to name check",
+                   productID, device.name ?? "")
+        }
+        #endif
+
+        // Fallback: name-based detection
+        return lowercaseName.contains("pro") ||
+               lowercaseName.contains("max") ||
+               lowercaseName.contains("3") ||
+               lowercaseName.contains("4")
+    }
+
+    /// Check if any paired AirPods are currently Bluetooth-connected.
+    /// Unlike `isConnected` (which requires active motion tracking), this uses
+    /// IOBluetooth and works without Motion permission.
+    var isBluetoothConnected: Bool {
+        guard let devices = IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice] else {
+            return false
+        }
+        return devices.contains { device in
+            guard let name = device.name?.lowercased() else { return false }
+            return name.contains("airpods") && device.isConnected()
+        }
     }
 
     var onPostureReading: ((PostureReading) -> Void)?

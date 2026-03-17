@@ -554,6 +554,7 @@ struct SettingsView: View {
     @State private var trackingModeSelection: TrackingMode
     @State private var preferredSource: TrackingSource
     @State private var airPodsAvailable: Bool
+    @State private var airPodsConnected: Bool
     @State private var cameraCalibrated: Bool
     @State private var airPodsCalibrated: Bool
     @State private var activeSource: TrackingSource
@@ -617,6 +618,9 @@ struct SettingsView: View {
         _trackingModeSelection = State(initialValue: appDelegate.trackingStore.withState { $0.trackingMode })
         _preferredSource = State(initialValue: appDelegate.trackingStore.withState { $0.preferredSource })
         _airPodsAvailable = State(initialValue: appDelegate.airPodsDetector.isAvailable)
+        let needsAirPods = appDelegate.trackingStore.withState { $0.trackingMode } == .automatic ||
+                           appDelegate.trackingSource == .airpods
+        _airPodsConnected = State(initialValue: needsAirPods ? appDelegate.airPodsDetector.isBluetoothConnected : false)
         _cameraCalibrated = State(initialValue: appDelegate.cameraCalibration?.isValid ?? false)
         _airPodsCalibrated = State(initialValue: appDelegate.airPodsCalibration?.isValid ?? false)
         _activeSource = State(initialValue: appDelegate.activeTrackingSource)
@@ -732,7 +736,7 @@ struct SettingsView: View {
                     DeviceStatusRow(
                         source: trackingSource,
                         isCalibrated: trackingSource == .camera ? cameraCalibrated : airPodsCalibrated,
-                        isConnected: trackingSource == .camera ? !availableCameras.isEmpty : airPodsAvailable,
+                        isConnected: trackingSource == .camera ? !availableCameras.isEmpty : airPodsConnected,
                         isPreferred: false,
                         isActive: appDelegate.state.isActive,
                         cameraDropdown: trackingSource == .camera && !availableCameras.isEmpty ? AnyView(
@@ -811,7 +815,7 @@ struct SettingsView: View {
                         DeviceStatusRow(
                             source: .airpods,
                             isCalibrated: airPodsCalibrated,
-                            isConnected: airPodsAvailable,
+                            isConnected: airPodsConnected,
                             isPreferred: preferredSource == .airpods,
                             isActive: activeSource == .airpods && appDelegate.state.isActive,
                             onCalibrate: {
@@ -1151,10 +1155,16 @@ struct SettingsView: View {
             appDelegate.onCalibrationComplete = {
                 cameraCalibrated = appDelegate.cameraCalibration?.isValid ?? false
                 airPodsCalibrated = appDelegate.airPodsCalibration?.isValid ?? false
+                airPodsConnected = appDelegate.airPodsDetector.isBluetoothConnected
                 activeSource = appDelegate.activeTrackingSource
             }
             appDelegate.onActiveSourceChanged = {
                 activeSource = appDelegate.activeTrackingSource
+            }
+        }
+        .onReceive(Timer.publish(every: 2, on: .main, in: .common).autoconnect()) { _ in
+            if trackingModeSelection == .automatic || trackingSource == .airpods {
+                airPodsConnected = appDelegate.airPodsDetector.isBluetoothConnected
             }
         }
         // Cleanup happens in SettingsWindowController.windowWillClose

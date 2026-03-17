@@ -5,6 +5,7 @@
 "menu.status.starting" = "Status: Starting...";
 "menu.enable" = "Enable";
 "menu.recalibrate" = "Recalibrate";
+"menu.support" = "Support";
 "menu.analytics" = "Analytics";
 "menu.settings" = "Settings";
 "menu.quit" = "Quit";
@@ -64,7 +65,7 @@
 "trackingSource.camera" = "Camera";
 "trackingSource.airpods" = "AirPods";
 "trackingSource.camera.description" = "Uses your camera to track head position. Works with any Mac camera.";
-"trackingSource.airpods.description" = "Uses motion sensors to detect head tilt. Requires AirPods Pro, Max, or 3rd gen.";
+"trackingSource.airpods.description" = "Uses motion sensors to detect head tilt. Requires AirPods Pro, Max, 3rd gen, or 4 with ANC.";
 "trackingSource.camera.requirement" = "Requires camera access";
 "trackingSource.airpods.requirement" = "Requires macOS 14+ and compatible AirPods";
 
@@ -75,7 +76,7 @@
 "airpods.requiresMacOS14" = "Requires macOS 14.0 or later";
 "airpods.noCompatibleConnected" = "No compatible AirPods connected";
 "airpods.failedCreateManager" = "Failed to create motion manager";
-"airpods.noCompatiblePaired" = "No compatible AirPods paired. Please pair AirPods Pro, Max, or 3rd gen.";
+"airpods.noCompatiblePaired" = "No compatible AirPods paired. Please pair AirPods Pro, Max, 3rd gen, or 4 with ANC.";
 
 // MARK: - Alerts (AppDelegate.swift)
 
@@ -86,6 +87,9 @@
 "alert.cameraNotAvailable" = "Camera Not Available";
 "alert.cameraNotAvailable.message" = "Please make sure your camera is connected and camera access is granted.";
 "alert.tryAgain" = "Try Again";
+"support.title" = "Support Dorso";
+"support.message" = "If Dorso has helped you with your posture and you want to show some support, please buy me a coffee.";
+"support.button" = "Buy Me a Coffee";
 
 // MARK: - Calibration (CalibrationWindow.swift)
 
