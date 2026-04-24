@@ -355,7 +355,7 @@ class WarningOverlayManager {
 
     func setupOverlayWindows() {
         for screen in NSScreen.screens {
-            let frame = screen.frame  // Use full frame including menu bar
+            let frame = screen.visibleFrame
             let window = NSWindow(
                 contentRect: frame,
                 styleMask: [.borderless],
@@ -364,7 +364,7 @@ class WarningOverlayManager {
             )
             window.isOpaque = false
             window.backgroundColor = .clear
-            window.level = NSWindow.Level(rawValue: NSWindow.Level.popUpMenu.rawValue - 1)
+            window.level = .aboveFullscreen
             window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             window.ignoresMouseEvents = true
             window.hasShadow = false

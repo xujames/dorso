@@ -107,6 +107,23 @@ enum WarningDefaults {
     static let color = NSColor(red: 0.85, green: 0.05, blue: 0.05, alpha: 1.0)
 }
 
+extension NSWindow.Level {
+    /// One below `.popUpMenu` (101). Renders above fullscreen-app content
+    /// on a fullscreen Space **only** as part of the full recipe:
+    ///   1. App is `.accessory` at the moment the window is created
+    ///      (see `AppDelegate.withAccessoryActivationPolicy`).
+    ///   2. `collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]`.
+    ///   3. `NSApp.activate(ignoringOtherApps: true)` (only needed when the
+    ///      window must be the key window, e.g. calibration).
+    ///   4. `window.orderFrontRegardless()` after activation.
+    ///
+    /// The numeric level alone is NOT sufficient — it's lower than
+    /// `.floating` and would sit under most app windows without the
+    /// collection-behavior + Space-ordering dance above. We use a value
+    /// just under `.popUpMenu` so system menu dropdowns still open on top.
+    static let aboveFullscreen = NSWindow.Level(rawValue: 100)
+}
+
 // MARK: - Warning Mode
 
 enum WarningMode: String, CaseIterable, Codable {

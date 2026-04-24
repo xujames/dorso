@@ -5,6 +5,14 @@ All notable changes to Dorso will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.2] - 2026-04-24
+
+### Fixed
+- Warning overlays (blur/glow/border/solid) and the calibration window now render over fullscreen apps on any monitor — previously they were hidden behind a fullscreen window on the Space where the fullscreen app lived
+
+### Acknowledgments
+- Thanks to [@zhouyeyu](https://github.com/zhouyeyu) for the initial fix ([#70](https://github.com/tldev/dorso/issues/70), [#88](https://github.com/tldev/dorso/pull/88))
+
 ## [1.11.1] - 2026-03-16
 
 ### Added

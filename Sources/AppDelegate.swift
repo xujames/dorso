@@ -339,13 +339,15 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
         setupDetectors()
         setupMenuBar()
-        setupOverlayWindows()
+        withAccessoryActivationPolicy {
+            setupOverlayWindows()
 
-        warningOverlayManager.mode = activeWarningMode
-        warningOverlayManager.warningColor = activeWarningColor
-        appliedWarningColorData = activeSettingsProfile?.warningColorData
-        if activeWarningMode.usesWarningOverlay {
-            warningOverlayManager.setupOverlayWindows()
+            warningOverlayManager.mode = activeWarningMode
+            warningOverlayManager.warningColor = activeWarningColor
+            appliedWarningColorData = activeSettingsProfile?.warningColorData
+            if activeWarningMode.usesWarningOverlay {
+                warningOverlayManager.setupOverlayWindows()
+            }
         }
 
         setupObservers()
@@ -485,6 +487,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         if analyticsWindowController == nil {
             analyticsWindowController = AnalyticsWindowController()
         }
+        analyticsWindowController?.appDelegate = self
         analyticsWindowController?.showWindow(nil)
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
@@ -525,6 +528,30 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
         if !hasOtherVisibleWindows {
             NSApp.setActivationPolicy(.accessory)
+        }
+    }
+
+    /// Runs `block` while the app is temporarily `.accessory`, then restores
+    /// the previous policy. Overlay and calibration windows only get Space
+    /// semantics that render over a fullscreen app if they're created while
+    /// Dorso is `.accessory` — a `.regular` context (onboarding/Settings open)
+    /// poisons their Space association. After the policy flip back we also
+    /// re-front whatever window was key beforehand, so a visible
+    /// Settings/Onboarding window doesn't get pushed behind other apps
+    /// when the block runs while it was in the foreground.
+    func withAccessoryActivationPolicy(_ block: () -> Void) {
+        let current = NSApp.activationPolicy()
+        if current != .accessory {
+            let previousKeyWindow = NSApp.keyWindow
+            NSApp.setActivationPolicy(.accessory)
+            block()
+            NSApp.setActivationPolicy(current)
+            if let previousKeyWindow {
+                NSApp.activate(ignoringOtherApps: true)
+                previousKeyWindow.makeKeyAndOrderFront(nil)
+            }
+        } else {
+            block()
         }
     }
 
@@ -1074,6 +1101,7 @@ extension AppDelegate.TrackingCoordinator {
     func showOnboarding() {
         appDelegate.onboardingWindowController = OnboardingWindowController()
         appDelegate.onboardingWindowController?.show(
+            appDelegate: appDelegate,
             cameraDetector: appDelegate.cameraDetector,
             airPodsDetector: appDelegate.airPodsDetector
         ) { [weak self] source, cameraID in

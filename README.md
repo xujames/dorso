@@ -1,4 +1,4 @@
-# Dorso (<a href="https://tomjohnell.com/i-made-a-mistake-posturr-is-now-dorso/" target="_blank">formerly Posturr</a>)
+# [Dorso](https://dorso.app/)
 
 **A macOS app that blurs your screen when you slouch.**
 
@@ -218,7 +218,7 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## Linux version
 
-Want this on Linux? See [postured](https://github.com/vadi2/postured).
+Want this on Linux? See [postured](https://github.com/vadi2/postured) or [dorso-linux](https://github.com/Gheop/dorso-linux).
 
 ### Contributors
 
@@ -237,3 +237,4 @@ Want this on Linux? See [postured](https://github.com/vadi2/postured).
 - [@bradystroud](https://github.com/bradystroud) - Automatic source switching feature suggestion
 - [@emmanuelprecieuxargent](https://github.com/emmanuelprecieuxargent) - Improved French and Spanish translations
 - [@shencangsheng](https://github.com/shencangsheng) - AirPods 4 compatibility detection report
+- [@zhouyeyu](https://github.com/zhouyeyu) - Initial fix for warning overlays and calibration over fullscreen apps

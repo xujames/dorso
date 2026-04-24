@@ -7,23 +7,31 @@
 #   ./build.sh              # Build with private APIs (GitHub release)
 #   ./build.sh --appstore   # Build for App Store (no private APIs)
 #   ./build.sh --release    # Build with private APIs and create release archive
+#   ./build.sh --dev        # Fast iteration: debug config, host arch only (no universal)
 
 set -e
 
 # Configuration
 APP_NAME="Dorso"
 BUNDLE_ID="com.thelazydeveloper.posturr"
-VERSION="1.11.1"
-BUILD_NUMBER="8"
+VERSION="1.11.2"
+BUILD_NUMBER="9"
 MIN_MACOS="13.0"
 
 # Check for App Store build flag
 APP_STORE_BUILD=false
+DEV_BUILD=false
+BUILD_CONFIG="release"
 SWIFT_BUILD_FLAGS=()
 if [[ "$*" == *"--appstore"* ]]; then
     APP_STORE_BUILD=true
     SWIFT_BUILD_FLAGS=(-Xswiftc -D -Xswiftc APP_STORE)
     echo "Building for App Store (no private APIs)..."
+fi
+if [[ "$*" == *"--dev"* ]]; then
+    DEV_BUILD=true
+    BUILD_CONFIG="debug"
+    echo "Dev build: debug config, host arch only..."
 fi
 
 # Directories
@@ -56,7 +64,11 @@ mkdir -p "$RESOURCES_DIR"
 
 # Compile Swift code
 echo "Compiling Swift sources with SwiftPM..."
-echo "Building universal binary (arm64 + x86_64)..."
+if [ "$DEV_BUILD" = true ]; then
+    echo "Building $BUILD_CONFIG binary ($(uname -m) only)..."
+else
+    echo "Building universal binary (arm64 + x86_64)..."
+fi
 
 # Get all Swift source files
 SOURCES_DIR="$SCRIPT_DIR/Sources"
@@ -68,29 +80,40 @@ for f in $SWIFT_FILES; do
 done
 echo ""
 
-swift build -c release --arch arm64 --product Dorso "${SWIFT_BUILD_FLAGS[@]}"
-swift build -c release --arch x86_64 --product Dorso "${SWIFT_BUILD_FLAGS[@]}"
+if [ "$DEV_BUILD" = true ]; then
+    HOST_ARCH="$(uname -m)"
+    swift build -c "$BUILD_CONFIG" --arch "$HOST_ARCH" --product Dorso "${SWIFT_BUILD_FLAGS[@]}"
+    DEV_BINARY="$SCRIPT_DIR/.build/${HOST_ARCH}-apple-macosx/${BUILD_CONFIG}/Dorso"
+    if [ ! -f "$DEV_BINARY" ]; then
+        echo -e "${RED}Error: Expected SwiftPM binary not found at $DEV_BINARY${NC}"
+        exit 1
+    fi
+    cp "$DEV_BINARY" "$MACOS_DIR/$APP_NAME"
+else
+    swift build -c release --arch arm64 --product Dorso "${SWIFT_BUILD_FLAGS[@]}"
+    swift build -c release --arch x86_64 --product Dorso "${SWIFT_BUILD_FLAGS[@]}"
 
-ARM64_BINARY="$SCRIPT_DIR/.build/arm64-apple-macosx/release/Dorso"
-X86_BINARY="$SCRIPT_DIR/.build/x86_64-apple-macosx/release/Dorso"
+    ARM64_BINARY="$SCRIPT_DIR/.build/arm64-apple-macosx/release/Dorso"
+    X86_BINARY="$SCRIPT_DIR/.build/x86_64-apple-macosx/release/Dorso"
 
-if [ ! -f "$ARM64_BINARY" ] || [ ! -f "$X86_BINARY" ]; then
-    echo -e "${RED}Error: Expected SwiftPM binaries not found.${NC}"
-    echo "  arm64: $ARM64_BINARY"
-    echo "  x86_64: $X86_BINARY"
-    exit 1
+    if [ ! -f "$ARM64_BINARY" ] || [ ! -f "$X86_BINARY" ]; then
+        echo -e "${RED}Error: Expected SwiftPM binaries not found.${NC}"
+        echo "  arm64: $ARM64_BINARY"
+        echo "  x86_64: $X86_BINARY"
+        exit 1
+    fi
+
+    cp "$ARM64_BINARY" "$MACOS_DIR/${APP_NAME}_arm64"
+    cp "$X86_BINARY" "$MACOS_DIR/${APP_NAME}_x86"
+
+    # Create universal binary
+    lipo -create -output "$MACOS_DIR/$APP_NAME" \
+        "$MACOS_DIR/${APP_NAME}_arm64" \
+        "$MACOS_DIR/${APP_NAME}_x86"
+
+    # Clean up
+    rm "$MACOS_DIR/${APP_NAME}_arm64" "$MACOS_DIR/${APP_NAME}_x86"
 fi
-
-cp "$ARM64_BINARY" "$MACOS_DIR/${APP_NAME}_arm64"
-cp "$X86_BINARY" "$MACOS_DIR/${APP_NAME}_x86"
-
-# Create universal binary
-lipo -create -output "$MACOS_DIR/$APP_NAME" \
-    "$MACOS_DIR/${APP_NAME}_arm64" \
-    "$MACOS_DIR/${APP_NAME}_x86"
-
-# Clean up
-rm "$MACOS_DIR/${APP_NAME}_arm64" "$MACOS_DIR/${APP_NAME}_x86"
 
 # Create Info.plist
 echo "Creating Info.plist..."

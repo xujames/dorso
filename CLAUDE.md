@@ -132,7 +132,8 @@ After upload:
 
 ## Build Configurations
 
-- `./build.sh` - Regular build with private APIs (for GitHub/direct distribution)
+- `./build.sh --dev` - Fast iteration: debug config, host arch only (~10s warm). Use this during development. Not suitable for distribution — debug binary, non-universal.
+- `./build.sh` - Regular build with private APIs (release, universal, for GitHub/direct distribution)
 - `./build.sh --appstore` - App Store build without private APIs
 - `./build.sh --release` - Regular build + creates ZIP archive
 
@@ -160,7 +161,7 @@ Note: The bundle ID is `com.thelazydeveloper.posturr`, NOT `com.posturr`.
 
 To rebuild, reinstall, clear settings and permissions, and launch the app:
 ```bash
-pkill -x Dorso; ./build.sh && rm -rf /Applications/Dorso.app && cp -r build/Dorso.app /Applications/ && rm -f ~/Library/Preferences/com.thelazydeveloper.posturr.plist && killall cfprefsd 2>/dev/null && tccutil reset Camera com.thelazydeveloper.posturr 2>/dev/null && tccutil reset Motion com.thelazydeveloper.posturr 2>/dev/null && tccutil reset Bluetooth com.thelazydeveloper.posturr 2>/dev/null; open /Applications/Dorso.app
+pkill -x Dorso; ./build.sh --dev && rm -rf /Applications/Dorso.app && cp -r build/Dorso.app /Applications/ && rm -f ~/Library/Preferences/com.thelazydeveloper.posturr.plist && killall cfprefsd 2>/dev/null && tccutil reset Camera com.thelazydeveloper.posturr 2>/dev/null && tccutil reset Motion com.thelazydeveloper.posturr 2>/dev/null && tccutil reset Bluetooth com.thelazydeveloper.posturr 2>/dev/null; open /Applications/Dorso.app
 ```
 
 ## Code Quality Rules

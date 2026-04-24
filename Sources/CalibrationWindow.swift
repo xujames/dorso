@@ -260,6 +260,11 @@ class CalibrationWindowController: NSObject {
     // Store the original connection callback to restore later
     var originalConnectionCallback: ((Bool) -> Void)?
 
+    // Activation policy the app had before calibration started. Calibration
+    // forces .accessory because the overlay-above-fullscreen recipe only
+    // behaves reliably when Dorso isn't a .regular app.
+    private var activationPolicyToRestore: NSApplication.ActivationPolicy?
+
     struct CalibrationStep {
         let instruction: String
         let screenIndex: Int
@@ -310,11 +315,27 @@ class CalibrationWindowController: NSObject {
     }
 
     func start(detector: PostureDetector, onComplete: @escaping ([CalibrationSample]) -> Void, onCancel: @escaping () -> Void) {
+        // Guard against reentrant start() before cleanup() has run: re-capturing
+        // `originalConnectionCallback` would snapshot a previously-wrapped
+        // callback as the "original," and cleanup would then restore the
+        // wrapper permanently.
+        guard windows.isEmpty else { return }
+
         self.detector = detector
         self.onComplete = onComplete
         self.onCancel = onCancel
         self.currentStep = 0
         self.capturedValues = []
+
+        // Force .accessory so calibration windows overlay cleanly above a
+        // fullscreen app on the current Space. Onboarding and Settings both
+        // flip Dorso to .regular, and if we launched calibration while still
+        // .regular the overlay could land behind the fullscreen window.
+        let currentPolicy = NSApp.activationPolicy()
+        if currentPolicy != .accessory {
+            activationPolicyToRestore = currentPolicy
+            NSApp.setActivationPolicy(.accessory)
+        }
 
         buildSteps()
 
@@ -326,7 +347,7 @@ class CalibrationWindowController: NSObject {
                 backing: .buffered,
                 defer: false
             )
-            window.level = .screenSaver + 1
+            window.level = .aboveFullscreen
             window.isOpaque = false
             window.backgroundColor = .clear
             window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
@@ -336,7 +357,6 @@ class CalibrationWindowController: NSObject {
             view.showRing = false  // Hide by default
             window.contentView = view
 
-            window.orderFrontRegardless()
             windows.append(window)
             calibrationViews.append(view)
         }
@@ -361,36 +381,24 @@ class CalibrationWindowController: NSObject {
             }
         }
 
-        if let firstWindow = windows.first {
-            firstWindow.makeKeyAndOrderFront(nil)
-        }
+        // Activate first so subsequent ordering happens while Dorso is frontmost.
         NSApp.activate(ignoringOtherApps: true)
+
+        // Re-asserting .level refreshes the window-server layer; pairing it with
+        // orderFrontRegardless anchors the window on the active Space (including
+        // a fullscreen Space). Make the first window key last, so the key state
+        // doesn't precede the ordering we just set.
+        for window in windows {
+            window.level = .aboveFullscreen
+            window.orderFrontRegardless()
+        }
+        windows.first?.makeKeyAndOrderFront(nil)
 
         // Check if detector needs to wait for connection (e.g., AirPods in ears)
         // Save the original callback to restore later
         originalConnectionCallback = detector.onConnectionStateChange
 
-        if !detector.isConnected {
-            // Show waiting state with lower window level so permission dialogs appear on top
-            isWaitingForConnection = true
-            for window in windows {
-                window.level = .floating  // Lower level allows system dialogs on top
-            }
-            showWaitingForConnection()
-
-            // Subscribe to connection state changes (wrapping the original callback)
-            detector.onConnectionStateChange = { [weak self] isConnected in
-                // Call our handler for calibration
-                if isConnected {
-                    self?.detectorConnected()
-                }
-                // Also call the original callback so AppDelegate stays in sync
-                self?.originalConnectionCallback?(isConnected)
-            }
-        } else {
-            // Already connected and authorized - proceed with calibration
-            updateStep()
-        }
+        checkDetectorAndProceed()
 
         startAnimation()
     }
@@ -406,17 +414,40 @@ class CalibrationWindowController: NSObject {
     func detectorConnected() {
         isWaitingForConnection = false
 
-        // Raise window level back to full screen calibration level
-        for window in windows {
-            window.level = .screenSaver + 1
-        }
         NSApp.activate(ignoringOtherApps: true)
+        for window in windows {
+            window.level = .aboveFullscreen
+            window.orderFrontRegardless()
+        }
 
         for view in calibrationViews {
             view.waitingForAirPods = false  // View still uses this name for the UI state
             view.needsDisplay = true
         }
         updateStep()
+    }
+
+    private func checkDetectorAndProceed() {
+        guard let detector else { return }
+        if !detector.isConnected {
+            isWaitingForConnection = true
+            for window in windows {
+                // Yield to system dialogs (e.g., Bluetooth pairing / "put AirPods
+                // in ear") that open at higher levels. Restored to .aboveFullscreen
+                // once the detector reports connected.
+                window.level = .floating
+            }
+            showWaitingForConnection()
+
+            detector.onConnectionStateChange = { [weak self] isConnected in
+                if isConnected {
+                    self?.detectorConnected()
+                }
+                self?.originalConnectionCallback?(isConnected)
+            }
+        } else {
+            updateStep()
+        }
     }
 
     func updateStep() {
@@ -506,5 +537,10 @@ class CalibrationWindowController: NSObject {
         }
         windows = []
         calibrationViews = []
+
+        if let policy = activationPolicyToRestore {
+            NSApp.setActivationPolicy(policy)
+            activationPolicyToRestore = nil
+        }
     }
 }
