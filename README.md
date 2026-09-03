@@ -233,8 +233,12 @@ Want this on Linux? See [postured](https://github.com/vadi2/postured) or [dorso-
 - [@claaslange](https://github.com/claaslange) - Camera compatibility issue with professional cameras
 - [@lucapericlp](https://github.com/lucapericlp) - Settings profiles feature
 - [@DengNaichen](https://github.com/DengNaichen) - Sleep/wake camera detection fix
+- [@Shadow1363](https://github.com/Shadow1363) - Auto-update feature suggestion
 - [@Shadow1363](https://github.com/Shadow1363) - Camera-active-while-disabled bug report and reproduction details
 - [@bradystroud](https://github.com/bradystroud) - Automatic source switching feature suggestion
 - [@emmanuelprecieuxargent](https://github.com/emmanuelprecieuxargent) - Improved French and Spanish translations
 - [@shencangsheng](https://github.com/shencangsheng) - AirPods 4 compatibility detection report
 - [@zhouyeyu](https://github.com/zhouyeyu) - Initial fix for warning overlays and calibration over fullscreen apps
+- [@mattwaler](https://github.com/mattwaler) - Full screen effects toggle
+- [@wensiet](https://github.com/wensiet) - Cmd+Tab visibility bug report and initial fix
+- [@MitchTalmadge](https://github.com/MitchTalmadge) - Pause on battery feature suggestion

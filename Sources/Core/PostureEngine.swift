@@ -66,6 +66,12 @@ struct AirPodsConnectionTransitionResult: Equatable {
     let shouldRestartMonitoring: Bool
 }
 
+/// Result of a power source change or pause-on-battery setting change
+struct PowerSourceTransitionResult: Equatable {
+    let newState: AppState
+    let shouldRestartMonitoring: Bool
+}
+
 /// Result of camera-connect handling
 struct CameraConnectedTransitionResult: Equatable {
     let newState: AppState
@@ -447,9 +453,14 @@ struct PostureEngine {
     }
 
     /// Determine unlock behavior based on captured pre-lock state.
+    /// If tracking would resume while on battery with pause-on-battery enabled
+    /// (e.g. the Mac was unplugged while the lid was closed), land in the
+    /// battery pause instead of restarting.
     static func stateWhenScreenUnlocks(
         currentState: AppState,
-        stateBeforeLock: AppState?
+        stateBeforeLock: AppState?,
+        pauseOnBatteryEnabled: Bool = false,
+        isOnBattery: Bool = false
     ) -> ScreenUnlockTransitionResult {
         guard case .paused(.screenLocked) = currentState else {
             return ScreenUnlockTransitionResult(
@@ -467,11 +478,66 @@ struct PostureEngine {
             )
         }
 
+        if pauseOnBatteryEnabled, isOnBattery, shouldPauseOnBattery(from: previousState) {
+            return ScreenUnlockTransitionResult(
+                newState: .paused(.onBattery),
+                stateBeforeLock: nil,
+                shouldRestartMonitoring: false
+            )
+        }
+
         return ScreenUnlockTransitionResult(
             newState: previousState,
             stateBeforeLock: nil,
             shouldRestartMonitoring: previousState == .monitoring
         )
+    }
+
+    // MARK: - Power Source Transitions
+
+    /// States the battery pause replaces: monitoring, plus the AirPods-removed
+    /// pause whose detector keeps running to watch for re-insertion. Calibration
+    /// is left alone — the user is actively mid-flow.
+    private static func shouldPauseOnBattery(from state: AppState) -> Bool {
+        state == .monitoring || state == .paused(.airPodsRemoved)
+    }
+
+    /// Determine state impact of an AC/battery power source change.
+    static func stateWhenPowerSourceChanges(
+        currentState: AppState,
+        isOnBattery: Bool,
+        pauseOnBatteryEnabled: Bool
+    ) -> PowerSourceTransitionResult {
+        if isOnBattery {
+            guard pauseOnBatteryEnabled, shouldPauseOnBattery(from: currentState) else {
+                return PowerSourceTransitionResult(newState: currentState, shouldRestartMonitoring: false)
+            }
+            return PowerSourceTransitionResult(newState: .paused(.onBattery), shouldRestartMonitoring: false)
+        }
+
+        guard currentState == .paused(.onBattery) else {
+            return PowerSourceTransitionResult(newState: currentState, shouldRestartMonitoring: false)
+        }
+        return PowerSourceTransitionResult(newState: .monitoring, shouldRestartMonitoring: true)
+    }
+
+    /// Determine state impact when the pause-on-battery setting changes.
+    static func stateWhenPauseOnBatterySettingChanges(
+        currentState: AppState,
+        isEnabled: Bool,
+        isOnBattery: Bool
+    ) -> PowerSourceTransitionResult {
+        if isEnabled {
+            guard isOnBattery, shouldPauseOnBattery(from: currentState) else {
+                return PowerSourceTransitionResult(newState: currentState, shouldRestartMonitoring: false)
+            }
+            return PowerSourceTransitionResult(newState: .paused(.onBattery), shouldRestartMonitoring: false)
+        }
+
+        guard currentState == .paused(.onBattery) else {
+            return PowerSourceTransitionResult(newState: currentState, shouldRestartMonitoring: false)
+        }
+        return PowerSourceTransitionResult(newState: .monitoring, shouldRestartMonitoring: true)
     }
 
     /// Determine state impact of an AirPods in-ear connection change.
@@ -505,7 +571,8 @@ struct PostureEngine {
             return CameraConnectedTransitionResult(newState: currentState, shouldSelectAndStartMonitoring: false)
         }
 
-        guard case .paused(let reason) = currentState else {
+        // The battery pause is only lifted by AC power, the setting, or the user.
+        guard case .paused(let reason) = currentState, reason != .onBattery else {
             return CameraConnectedTransitionResult(newState: currentState, shouldSelectAndStartMonitoring: false)
         }
 
@@ -528,7 +595,7 @@ struct PostureEngine {
         hasFallbackCamera: Bool,
         fallbackMatchesProfile: Bool
     ) -> CameraDisconnectedTransitionResult {
-        guard trackingSource == .camera else {
+        guard trackingSource == .camera, currentState != .paused(.onBattery) else {
             return CameraDisconnectedTransitionResult(newState: currentState, action: .none)
         }
 
@@ -563,7 +630,7 @@ struct PostureEngine {
         hasMatchingProfileCamera: Bool,
         selectedCameraMatchesProfile: Bool
     ) -> DisplayConfigurationTransitionResult {
-        guard currentState != .disabled else {
+        guard currentState != .disabled, currentState != .paused(.onBattery) else {
             return DisplayConfigurationTransitionResult(
                 newState: currentState,
                 shouldSwitchToProfileCamera: false,

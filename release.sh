@@ -109,6 +109,28 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
     exit 1
 fi
 
+# The appcast entry is generated from build.sh's version fields, so they must
+# match the release version or auto-update would offer the wrong build
+BUILD_SH_VERSION=$(grep '^VERSION=' build.sh | cut -d'"' -f2)
+BUILD_NUMBER=$(grep '^BUILD_NUMBER=' build.sh | cut -d'"' -f2)
+MIN_MACOS=$(grep '^MIN_MACOS=' build.sh | cut -d'"' -f2)
+if [ "$VERSION" != "$BUILD_SH_VERSION" ]; then
+    echo -e "${RED}Error: release version $VERSION does not match build.sh VERSION=$BUILD_SH_VERSION${NC}"
+    echo "Bump VERSION (and BUILD_NUMBER) in build.sh first."
+    exit 1
+fi
+
+# Sparkle tools ship with the SwiftPM artifact
+SPARKLE_BIN="$SCRIPT_DIR/.build/artifacts/sparkle/Sparkle/bin"
+if [ ! -x "$SPARKLE_BIN/sign_update" ]; then
+    echo -e "${YELLOW}Sparkle tools not found; fetching packages...${NC}"
+    swift package resolve
+fi
+if [ ! -x "$SPARKLE_BIN/sign_update" ]; then
+    echo -e "${RED}Error: sign_update not found at $SPARKLE_BIN${NC}"
+    exit 1
+fi
+
 TAG="v$VERSION"
 ZIP_NAME="Dorso-$TAG.zip"
 DMG_NAME="Dorso-$TAG.dmg"
@@ -143,11 +165,21 @@ if git rev-parse "$TAG" >/dev/null 2>&1; then
 fi
 
 # Step 1: Build
-echo -e "${GREEN}[1/7] Building app...${NC}"
+echo -e "${GREEN}[1/8] Building app...${NC}"
 ./build.sh
 
 # Step 2: Code sign with Developer ID
-echo -e "${GREEN}[2/7] Signing app with Developer ID...${NC}"
+echo -e "${GREEN}[2/8] Signing app with Developer ID...${NC}"
+
+# Sign Sparkle's nested components first (inside-out order), per Sparkle's
+# distribution docs. All need hardened runtime for notarization.
+SPARKLE_FW="build/Dorso.app/Contents/Frameworks/Sparkle.framework"
+codesign --force --options runtime --sign "$DEVELOPER_ID" --timestamp "$SPARKLE_FW/Versions/B/XPCServices/Installer.xpc"
+codesign --force --options runtime --preserve-metadata=entitlements --sign "$DEVELOPER_ID" --timestamp "$SPARKLE_FW/Versions/B/XPCServices/Downloader.xpc"
+codesign --force --options runtime --sign "$DEVELOPER_ID" --timestamp "$SPARKLE_FW/Versions/B/Autoupdate"
+codesign --force --options runtime --sign "$DEVELOPER_ID" --timestamp "$SPARKLE_FW/Versions/B/Updater.app"
+codesign --force --options runtime --sign "$DEVELOPER_ID" --timestamp "$SPARKLE_FW"
+
 codesign --force --options runtime --entitlements "build/Dorso.entitlements" --sign "$DEVELOPER_ID" --timestamp "build/Dorso.app"
 
 # Verify signature
@@ -156,24 +188,26 @@ codesign --verify --deep --strict "build/Dorso.app"
 echo -e "${GREEN}Signature verified${NC}"
 
 # Step 3: Create ZIP for notarization
-echo -e "${GREEN}[3/7] Creating ZIP for notarization...${NC}"
+# ditto preserves Sparkle.framework's symlinks; zip -r would flatten them and
+# break the code signature
+echo -e "${GREEN}[3/8] Creating ZIP for notarization...${NC}"
 rm -f "build/$ZIP_NAME"
-cd build && zip -r "$ZIP_NAME" Dorso.app && cd ..
+ditto -c -k --keepParent build/Dorso.app "build/$ZIP_NAME"
 
 # Step 4: Submit for notarization
-echo -e "${GREEN}[4/7] Submitting for notarization (this may take a few minutes)...${NC}"
+echo -e "${GREEN}[4/8] Submitting for notarization (this may take a few minutes)...${NC}"
 xcrun notarytool submit "build/$ZIP_NAME" --keychain-profile "$NOTARY_PROFILE" --wait
 
 # Step 5: Staple the notarization ticket
-echo -e "${GREEN}[5/7] Stapling notarization ticket...${NC}"
+echo -e "${GREEN}[5/8] Stapling notarization ticket...${NC}"
 xcrun stapler staple "build/Dorso.app"
 
 # Recreate ZIP with stapled app
 rm -f "build/$ZIP_NAME"
-cd build && zip -r "$ZIP_NAME" Dorso.app && cd ..
+ditto -c -k --keepParent build/Dorso.app "build/$ZIP_NAME"
 
 # Step 6: Create DMG (with notarized app)
-echo -e "${GREEN}[6/7] Creating DMG...${NC}"
+echo -e "${GREEN}[6/8] Creating DMG...${NC}"
 hdiutil detach /Volumes/Dorso 2>/dev/null || true
 rm -f "build/$DMG_NAME"
 
@@ -202,7 +236,7 @@ echo "Stapling DMG..."
 xcrun stapler staple "build/$DMG_NAME"
 
 # Step 7: Create git tag and GitHub release
-echo -e "${GREEN}[7/7] Creating git tag and GitHub release...${NC}"
+echo -e "${GREEN}[7/8] Creating git tag and GitHub release...${NC}"
 git tag "$TAG"
 git push origin "$TAG"
 
@@ -247,6 +281,56 @@ else
         --notes "$RELEASE_NOTES"
 
     echo -e "${GREEN}Release created!${NC}"
+fi
+
+# Step 8: Update the Sparkle appcast so existing installs see this release.
+# The EdDSA signature must be of the exact ZIP uploaded to GitHub.
+echo -e "${GREEN}[8/8] Updating appcast...${NC}"
+SIGN_ATTRS=$("$SPARKLE_BIN/sign_update" "build/$ZIP_NAME")
+PUB_DATE=$(LC_ALL=C date "+%a, %d %b %Y %H:%M:%S %z")
+DOWNLOAD_URL="https://github.com/tldev/dorso/releases/download/$TAG/$ZIP_NAME"
+RELEASE_URL="https://github.com/tldev/dorso/releases/tag/$TAG"
+
+# Drop any existing appcast item for this tag (re-release), then insert the
+# new item below the marker comment
+awk -v tag="releases/download/$TAG/" '
+    /<item>/ { buf = $0 ORS; initem = 1; drop = 0; next }
+    initem {
+        buf = buf $0 ORS
+        if (index($0, tag)) drop = 1
+        if (/<\/item>/) { if (!drop) printf "%s", buf; initem = 0 }
+        next
+    }
+    { print }
+' appcast.xml > build/appcast.tmp && mv build/appcast.tmp appcast.xml
+
+cat > build/appcast-item.xml << EOF
+        <item>
+            <title>Version $VERSION</title>
+            <link>$RELEASE_URL</link>
+            <sparkle:version>$BUILD_NUMBER</sparkle:version>
+            <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>$MIN_MACOS</sparkle:minimumSystemVersion>
+            <sparkle:releaseNotesLink>$RELEASE_URL</sparkle:releaseNotesLink>
+            <pubDate>$PUB_DATE</pubDate>
+            <enclosure
+                url="$DOWNLOAD_URL"
+                $SIGN_ATTRS
+                type="application/octet-stream"/>
+        </item>
+EOF
+sed -i '' "/release.sh inserts new release items below this line/r build/appcast-item.xml" appcast.xml
+rm -f build/appcast-item.xml
+
+if ! git diff --quiet -- appcast.xml; then
+    git commit -m "Update appcast for $TAG" -- appcast.xml
+    if git push origin HEAD; then
+        echo -e "${GREEN}Appcast published${NC}"
+    else
+        echo -e "${YELLOW}Could not push appcast.xml; push it manually or the update will not reach users${NC}"
+    fi
+else
+    echo -e "${YELLOW}appcast.xml unchanged; nothing to publish${NC}"
 fi
 
 echo ""

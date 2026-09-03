@@ -15,9 +15,12 @@ extension AppDelegate {
     func saveSettings() {
         let defaults = UserDefaults.standard
         defaults.set(useCompatibilityMode, forKey: SettingsKeys.useCompatibilityMode)
+        defaults.set(appAppearance.rawValue, forKey: SettingsKeys.appAppearance)
         defaults.set(blurWhenAway, forKey: SettingsKeys.blurWhenAway)
         defaults.set(showInDock, forKey: SettingsKeys.showInDock)
         defaults.set(pauseOnTheGo, forKey: SettingsKeys.pauseOnTheGo)
+        defaults.set(pauseOnBattery, forKey: SettingsKeys.pauseOnBattery)
+        defaults.set(useFullScreenOverlay, forKey: SettingsKeys.useFullScreenOverlay)
         defaults.set(toggleShortcutEnabled, forKey: SettingsKeys.toggleShortcutEnabled)
         defaults.set(Int(toggleShortcut.keyCode), forKey: SettingsKeys.toggleShortcutKeyCode)
         defaults.set(Int(toggleShortcut.modifiers.rawValue), forKey: SettingsKeys.toggleShortcutModifiers)
@@ -41,9 +44,17 @@ extension AppDelegate {
         applyActiveSettingsProfile()
 
         useCompatibilityMode = defaults.bool(forKey: SettingsKeys.useCompatibilityMode)
+        if let appearanceString = defaults.string(forKey: SettingsKeys.appAppearance),
+           let appearance = AppAppearance(rawValue: appearanceString) {
+            appAppearance = appearance
+        }
         blurWhenAway = defaults.bool(forKey: SettingsKeys.blurWhenAway)
         showInDock = defaults.bool(forKey: SettingsKeys.showInDock)
         pauseOnTheGo = defaults.bool(forKey: SettingsKeys.pauseOnTheGo)
+        if defaults.object(forKey: SettingsKeys.pauseOnBattery) != nil {
+            applyTrackingAction(.setPauseOnBatteryEnabled(defaults.bool(forKey: SettingsKeys.pauseOnBattery)))
+        }
+        useFullScreenOverlay = defaults.bool(forKey: SettingsKeys.useFullScreenOverlay)
         cameraDetector.selectedCameraID = defaults.string(forKey: SettingsKeys.lastCameraID)
         if let sourceString = defaults.string(forKey: SettingsKeys.trackingSource),
            let source = TrackingSource(rawValue: sourceString) {
@@ -51,14 +62,14 @@ extension AppDelegate {
         }
         if let modeString = defaults.string(forKey: SettingsKeys.trackingMode),
            let mode = TrackingMode(rawValue: modeString) {
-            trackingStore.send(.setTrackingMode(mode))
+            applyTrackingAction(.setTrackingMode(mode))
         }
         if let prefString = defaults.string(forKey: SettingsKeys.preferredSource),
            let pref = TrackingSource(rawValue: prefString) {
-            trackingStore.send(.setPreferredSource(pref))
+            applyTrackingAction(.setPreferredSource(pref))
         }
         if defaults.object(forKey: SettingsKeys.autoReturnEnabled) != nil {
-            trackingStore.send(.setAutoReturnEnabled(defaults.bool(forKey: SettingsKeys.autoReturnEnabled)))
+            applyTrackingAction(.setAutoReturnEnabled(defaults.bool(forKey: SettingsKeys.autoReturnEnabled)))
         }
         if let data = defaults.data(forKey: SettingsKeys.airPodsCalibration),
            let calibration = try? JSONDecoder().decode(AirPodsCalibrationData.self, from: data) {

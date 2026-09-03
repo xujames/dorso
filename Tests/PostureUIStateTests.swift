@@ -184,4 +184,17 @@ final class PostureUIStateTests: XCTestCase {
         XCTAssertEqual(uiState.statusText, L("status.pausedPutInAirPods"))
         XCTAssertEqual(uiState.icon, .paused)
     }
+
+    func testPausedOnBattery() {
+        let uiState = PostureUIState.derive(
+            from: .paused(.onBattery),
+            isCalibrated: true,
+            isCurrentlyAway: false,
+            isCurrentlySlouching: false,
+            trackingSource: .camera
+        )
+
+        XCTAssertEqual(uiState.statusText, L("status.pausedOnBattery"))
+        XCTAssertEqual(uiState.icon, .paused)
+    }
 }

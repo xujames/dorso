@@ -8,6 +8,7 @@ enum PauseReason: Equatable {
     case cameraDisconnected
     case screenLocked
     case airPodsRemoved
+    case onBattery
 }
 
 // MARK: - App State

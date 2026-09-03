@@ -691,4 +691,229 @@ final class PostureEngineTransitionTests: XCTestCase {
         XCTAssertFalse(result.didSwitchSource)
         XCTAssertFalse(result.shouldStartMonitoring)
     }
+
+    // MARK: - Power Source Transitions
+
+    func testStateWhenPowerSwitchesToBatteryPausesMonitoring() {
+        let result = PostureEngine.stateWhenPowerSourceChanges(
+            currentState: .monitoring,
+            isOnBattery: true,
+            pauseOnBatteryEnabled: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.onBattery))
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenPowerSwitchesToBatteryPausesAirPodsRemovedPause() {
+        // The AirPods-removed pause keeps its detector running, so the battery
+        // pause replaces it to actually save power.
+        let result = PostureEngine.stateWhenPowerSourceChanges(
+            currentState: .paused(.airPodsRemoved),
+            isOnBattery: true,
+            pauseOnBatteryEnabled: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.onBattery))
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenPowerSwitchesToBatteryWithSettingDisabledIsNoOp() {
+        let result = PostureEngine.stateWhenPowerSourceChanges(
+            currentState: .monitoring,
+            isOnBattery: true,
+            pauseOnBatteryEnabled: false
+        )
+
+        XCTAssertEqual(result.newState, .monitoring)
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenPowerSwitchesToBatteryLeavesCalibrationRunning() {
+        let result = PostureEngine.stateWhenPowerSourceChanges(
+            currentState: .calibrating,
+            isOnBattery: true,
+            pauseOnBatteryEnabled: true
+        )
+
+        XCTAssertEqual(result.newState, .calibrating)
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenPowerSwitchesToBatteryLeavesDisabledAlone() {
+        let result = PostureEngine.stateWhenPowerSourceChanges(
+            currentState: .disabled,
+            isOnBattery: true,
+            pauseOnBatteryEnabled: true
+        )
+
+        XCTAssertEqual(result.newState, .disabled)
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenPowerReturnsToACResumesFromBatteryPause() {
+        let result = PostureEngine.stateWhenPowerSourceChanges(
+            currentState: .paused(.onBattery),
+            isOnBattery: false,
+            pauseOnBatteryEnabled: true
+        )
+
+        XCTAssertEqual(result.newState, .monitoring)
+        XCTAssertTrue(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenPowerReturnsToACLeavesOtherPausesAlone() {
+        let result = PostureEngine.stateWhenPowerSourceChanges(
+            currentState: .paused(.screenLocked),
+            isOnBattery: false,
+            pauseOnBatteryEnabled: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.screenLocked))
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testEnablingPauseOnBatteryWhileOnBatteryPausesImmediately() {
+        let result = PostureEngine.stateWhenPauseOnBatterySettingChanges(
+            currentState: .monitoring,
+            isEnabled: true,
+            isOnBattery: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.onBattery))
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testEnablingPauseOnBatteryWhileOnACIsNoOp() {
+        let result = PostureEngine.stateWhenPauseOnBatterySettingChanges(
+            currentState: .monitoring,
+            isEnabled: true,
+            isOnBattery: false
+        )
+
+        XCTAssertEqual(result.newState, .monitoring)
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testDisablingPauseOnBatteryResumesFromBatteryPause() {
+        let result = PostureEngine.stateWhenPauseOnBatterySettingChanges(
+            currentState: .paused(.onBattery),
+            isEnabled: false,
+            isOnBattery: true
+        )
+
+        XCTAssertEqual(result.newState, .monitoring)
+        XCTAssertTrue(result.shouldRestartMonitoring)
+    }
+
+    func testDisablingPauseOnBatteryLeavesOtherStatesAlone() {
+        let result = PostureEngine.stateWhenPauseOnBatterySettingChanges(
+            currentState: .paused(.noProfile),
+            isEnabled: false,
+            isOnBattery: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.noProfile))
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenScreenUnlocksOnBatteryLandsInBatteryPause() {
+        let result = PostureEngine.stateWhenScreenUnlocks(
+            currentState: .paused(.screenLocked),
+            stateBeforeLock: .monitoring,
+            pauseOnBatteryEnabled: true,
+            isOnBattery: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.onBattery))
+        XCTAssertNil(result.stateBeforeLock)
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenScreenUnlocksOnACRestoresMonitoringDespiteSetting() {
+        let result = PostureEngine.stateWhenScreenUnlocks(
+            currentState: .paused(.screenLocked),
+            stateBeforeLock: .monitoring,
+            pauseOnBatteryEnabled: true,
+            isOnBattery: false
+        )
+
+        XCTAssertEqual(result.newState, .monitoring)
+        XCTAssertNil(result.stateBeforeLock)
+        XCTAssertTrue(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenScreenUnlocksOnBatteryWithSettingDisabledRestoresMonitoring() {
+        let result = PostureEngine.stateWhenScreenUnlocks(
+            currentState: .paused(.screenLocked),
+            stateBeforeLock: .monitoring,
+            pauseOnBatteryEnabled: false,
+            isOnBattery: true
+        )
+
+        XCTAssertEqual(result.newState, .monitoring)
+        XCTAssertNil(result.stateBeforeLock)
+        XCTAssertTrue(result.shouldRestartMonitoring)
+    }
+
+    func testStateWhenScreenUnlocksOnBatteryRestoresCalibrating() {
+        // Calibration is user-driven; the battery pause never replaces it.
+        let result = PostureEngine.stateWhenScreenUnlocks(
+            currentState: .paused(.screenLocked),
+            stateBeforeLock: .calibrating,
+            pauseOnBatteryEnabled: true,
+            isOnBattery: true
+        )
+
+        XCTAssertEqual(result.newState, .calibrating)
+        XCTAssertNil(result.stateBeforeLock)
+        XCTAssertFalse(result.shouldRestartMonitoring)
+    }
+
+    // MARK: - Battery Pause Stickiness
+
+    func testCameraConnectDoesNotLiftBatteryPause() {
+        let result = PostureEngine.stateWhenCameraConnects(
+            currentState: .paused(.onBattery),
+            trackingSource: .camera,
+            hasMatchingProfileForConnectedCamera: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.onBattery))
+        XCTAssertFalse(result.shouldSelectAndStartMonitoring)
+    }
+
+    func testCameraDisconnectDoesNotLiftBatteryPause() {
+        let result = PostureEngine.stateWhenCameraDisconnects(
+            currentState: .paused(.onBattery),
+            trackingSource: .camera,
+            disconnectedCameraIsSelected: true,
+            hasFallbackCamera: true,
+            fallbackMatchesProfile: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.onBattery))
+        XCTAssertEqual(result.action, .none)
+    }
+
+    func testDisplayConfigurationChangeDoesNotLiftBatteryPause() {
+        let result = PostureEngine.stateWhenDisplayConfigurationChanges(
+            currentState: .paused(.onBattery),
+            trackingSource: .camera,
+            pauseOnTheGoEnabled: false,
+            isLaptopOnlyConfiguration: false,
+            hasAnyCamera: true,
+            hasMatchingProfileCamera: true,
+            selectedCameraMatchesProfile: true
+        )
+
+        XCTAssertEqual(result.newState, .paused(.onBattery))
+        XCTAssertFalse(result.shouldSwitchToProfileCamera)
+        XCTAssertFalse(result.shouldStartMonitoring)
+    }
+
+    func testDetectorDoesNotRunWhilePausedOnBattery() {
+        XCTAssertFalse(PostureEngine.shouldDetectorRun(for: .paused(.onBattery), trackingSource: .camera))
+        XCTAssertFalse(PostureEngine.shouldDetectorRun(for: .paused(.onBattery), trackingSource: .airpods))
+    }
 }

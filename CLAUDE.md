@@ -7,10 +7,10 @@
 When the user says "ship it", perform the complete release workflow:
 
 1. **Pull latest changes** with `git pull --rebase origin main` - ALWAYS do this first before committing
-2. **Bump version** in `build.sh`
+2. **Bump version** in `build.sh` (both `VERSION` and `BUILD_NUMBER`)
 3. **Commit** cleanup/feature changes with proper attribution
 4. **Merge** to main (if on a feature branch)
-5. **Run `./release.sh X.Y.Z`** - builds, signs, notarizes, creates GitHub release
+5. **Run `./release.sh X.Y.Z`** - builds, signs, notarizes, creates GitHub release, updates and pushes the Sparkle appcast
 6. **Update release notes** with user-friendly description via `gh release edit`
 7. **Update CHANGELOG.md** with new version entry
 8. **Update README.md** contributors section if applicable
@@ -130,6 +130,16 @@ After upload:
 4. Answer Export Compliance: "No" (no encryption)
 5. Save → Add for Review → Submit to App Review
 
+### Auto-Update (Sparkle)
+
+GitHub builds auto-update via Sparkle. App Store builds contain no trace of Sparkle (the `APP_STORE` flag compiles the code out and `-dead_strip_dylibs` removes the linkage) and update through the App Store itself.
+
+- **Feed**: `appcast.xml` at the repo root, served from raw.githubusercontent.com (`SPARKLE_FEED_URL` in `build.sh`). An update goes live when appcast.xml lands on main; release.sh step 8 edits, commits, and pushes it automatically.
+- **Update eligibility** is decided by comparing `BUILD_NUMBER` (CFBundleVersion), so `BUILD_NUMBER` must increase with every release, not just `VERSION`. release.sh aborts if `VERSION` in build.sh does not match the release argument.
+- **Signing**: updates are EdDSA-signed. The private key lives in the login Keychain as "Private key for signing Sparkle updates" (public key: `SPARKLE_PUBLIC_ED_KEY` in `build.sh`). If the key is lost, shipped apps will reject future updates, so keep a backup. release.sh signs Sparkle's nested components before the app, then signs the final ZIP with `sign_update`. Never hand-edit appcast signatures.
+- **ZIPs must be created with `ditto -c -k --keepParent`**: `zip -r` flattens Sparkle.framework's internal symlinks, which breaks the code signature and makes Sparkle reject the update.
+- Sparkle CLI tools ship with the SwiftPM artifact at `.build/artifacts/sparkle/Sparkle/bin/`.
+
 ## Build Configurations
 
 - `./build.sh --dev` - Fast iteration: debug config, host arch only (~10s warm). Use this during development. Not suitable for distribution — debug binary, non-universal.
@@ -182,20 +192,32 @@ pkill -x Dorso; ./build.sh --dev && rm -rf /Applications/Dorso.app && cp -r buil
 
 ## Version Bumping
 
-Update version in `build.sh` (VERSION variable) before releasing.
+Update both `VERSION` and `BUILD_NUMBER` in `build.sh` before releasing. Sparkle compares `BUILD_NUMBER` to decide whether an update is offered, so it must increase every release.
 
 ## Key Files
 
 ### Source Code (in `Sources/`)
-- `main.swift` - App entry point
-- `AppDelegate.swift` - Main app coordinator, state machine, camera capture, posture detection
-- `Models.swift` - Shared types (SettingsKeys, ProfileData, PauseReason, AppState)
-- `Persistence.swift` - SettingsStorage and ProfileStorage classes
-- `DisplayManager.swift` - Display UUID detection and configuration change handling
-- `MenuBar.swift` - MenuBarManager for status bar setup
-- `SettingsWindow.swift` - SwiftUI settings window with SettingsWindowController
-- `CalibrationWindow.swift` - Calibration UI with pulsing ring animation
-- `BlurOverlay.swift` - Private API loading and BlurOverlayManager
+- `App/DorsoMain.swift` - Executable entry point (everything else in `Sources/` builds as the testable `DorsoCore` library)
+- `Core/` - Pure logic, no UI side effects
+  - `TrackingFeature.swift` - TCA reducer owning tracking state; requests side effects as `EffectIntent` values via `TrackingRuntimeClient.perform`
+  - `PostureEngine.swift` - Pure state-transition functions used by the reducer
+  - `AppState.swift`, `Models.swift`, `PostureUIState.swift`, `Analytics.swift`, `Localization.swift`
+- `AppDelegate/` - App coordinator, split by concern
+  - `AppDelegate.swift` - Properties, lifecycle, store dispatch funnels (`applyTrackingAction` sync / `sendTrackingAction` async), and `performTrackingEffect` (the single place reducer effects execute)
+  - `AppDelegate+Tracking.swift` - Detector/UI sync, source switching, monitoring, initial setup
+  - `AppDelegate+Calibration.swift` - Calibration flow and its alerts
+  - `AppDelegate+DeviceEvents.swift` - Camera hot-plug, display config, screen lock
+  - `AppDelegate+Overlay.swift`, `AppDelegate+Persistence.swift`
+- `Detectors/` - `CameraPostureDetector`, `AirPodsPostureDetector`, shared `PostureDetector` protocol
+- `System/` - OS observers (camera hot-plug, display, screen lock) and global hotkey
+- `Settings/` - Settings keys, migrations, profiles
+- `UI/` - Menu bar, overlays (blur, warning), and windows (Settings, Calibration, Onboarding, Analytics, Support)
+
+### Architecture Rules
+- All tracking state lives in the TCA store; `AppDelegate` exposes computed accessors over it, never duplicate stored state.
+- Every store dispatch goes through `applyTrackingAction`/`sendTrackingAction` so transition side effects (detector/UI sync) are never skipped.
+- New reducer side effects: add an `EffectIntent` case and handle it in `performTrackingEffect`. Do not add ad-hoc callbacks.
+- Tests must stay headless: nothing test-reachable in `DorsoCore` may require a window server (`swift test` must pass without one).
 
 ### Build & Release
 - `build.sh` - Build script with App Store support

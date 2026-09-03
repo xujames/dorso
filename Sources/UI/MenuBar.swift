@@ -16,6 +16,9 @@ final class MenuBarManager {
     var onOpenSettings: (() -> Void)?
     var onOpenSupport: (() -> Void)?
     var onQuit: (() -> Void)?
+    #if !APP_STORE
+    var onCheckForUpdates: (() -> Void)?
+    #endif
 
     func setup() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -24,6 +27,14 @@ final class MenuBarManager {
             button.image = MenuBarIcon.good.image
         }
 
+        statusItem.menu = makeMenu()
+    }
+
+    /// Builds the status menu and retains its mutable items. Separate from
+    /// `setup()` because NSMenu needs no window server connection, so
+    /// headless tests can build the menu and exercise the update methods.
+    @discardableResult
+    func makeMenu() -> NSMenu {
         let menu = NSMenu()
 
         // Status
@@ -64,6 +75,15 @@ final class MenuBarManager {
         settingsItem.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: L("menu.settings"))
         menu.addItem(settingsItem)
 
+        #if !APP_STORE
+        // Check for Updates (direct-distribution builds only; the App Store
+        // delivers updates for Mac App Store installs)
+        let updatesItem = NSMenuItem(title: L("menu.checkForUpdates"), action: #selector(handleCheckForUpdates), keyEquivalent: "")
+        updatesItem.target = self
+        updatesItem.image = NSImage(systemSymbolName: "arrow.triangle.2.circlepath", accessibilityDescription: L("menu.checkForUpdates"))
+        menu.addItem(updatesItem)
+        #endif
+
         menu.addItem(NSMenuItem.separator())
 
         // Quit
@@ -71,17 +91,17 @@ final class MenuBarManager {
         quitItem.target = self
         menu.addItem(quitItem)
 
-        statusItem.menu = menu
+        return menu
     }
 
     // MARK: - Updates
 
-    private var isSetUp: Bool { statusItem != nil }
+    private var isSetUp: Bool { statusMenuItem != nil }
 
     func updateStatus(text: String, icon: MenuBarIcon) {
         guard isSetUp else { return }
         statusMenuItem.title = text
-        statusItem.button?.image = icon.image
+        statusItem?.button?.image = icon.image
     }
 
     func updateEnabledState(_ enabled: Bool) {
@@ -95,6 +115,7 @@ final class MenuBarManager {
     }
 
     func updateShortcut(enabled: Bool, shortcut: KeyboardShortcut) {
+        guard isSetUp else { return }
         if enabled {
             enabledMenuItem.keyEquivalent = shortcut.keyCharacter
             enabledMenuItem.keyEquivalentModifierMask = shortcut.modifiers
@@ -129,4 +150,10 @@ final class MenuBarManager {
     @objc private func handleQuit() {
         onQuit?()
     }
+
+    #if !APP_STORE
+    @objc private func handleCheckForUpdates() {
+        onCheckForUpdates?()
+    }
+    #endif
 }

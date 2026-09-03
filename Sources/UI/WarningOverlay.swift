@@ -345,6 +345,15 @@ class SolidOverlayView: NSView {
 
 // MARK: - Warning Overlay Manager
 
+extension NSScreen {
+    /// The frame an overlay window should cover: the whole screen (over the
+    /// dock and menu bar) or just the visible working area. Blur and warning
+    /// overlays must use the same frame to stay pixel-aligned per screen.
+    func overlayFrame(fullScreen: Bool) -> NSRect {
+        fullScreen ? frame : visibleFrame
+    }
+}
+
 class WarningOverlayManager {
     var windows: [NSWindow] = []
     var overlayViews: [NSView] = []
@@ -352,10 +361,11 @@ class WarningOverlayManager {
     var targetIntensity: CGFloat = 0.0
     var mode: WarningMode = .glow
     var warningColor: NSColor = WarningDefaults.color
+    var useFullScreenOverlay = false
 
     func setupOverlayWindows() {
         for screen in NSScreen.screens {
-            let frame = screen.visibleFrame
+            let frame = screen.overlayFrame(fullScreen: useFullScreenOverlay)
             let window = NSWindow(
                 contentRect: frame,
                 styleMask: [.borderless],
@@ -402,6 +412,9 @@ class WarningOverlayManager {
         }
         windows.removeAll()
         overlayViews.removeAll()
+        // New views start at intensity 0; reset the ramp so updateWarning
+        // repaints them instead of skipping when currentIntensity == targetIntensity.
+        currentIntensity = 0
         setupOverlayWindows()
     }
 

@@ -248,3 +248,94 @@ final class CameraObserverTests: XCTestCase {
         XCTAssertTrue(observer.isObserving, "Should be able to restart after stopping")
     }
 }
+
+// MARK: - PowerSourceObserver Tests
+
+final class PowerSourceObserverTests: XCTestCase {
+
+    private var observer: PowerSourceObserver!
+
+    override func setUp() {
+        super.setUp()
+        observer = PowerSourceObserver()
+    }
+
+    override func tearDown() {
+        observer = nil
+        super.tearDown()
+    }
+
+    func testIsObservingIsFalseInitially() {
+        XCTAssertFalse(observer.isObserving)
+    }
+
+    func testStartObservingSetsIsObservingTrue() {
+        observer.startObserving()
+        XCTAssertTrue(observer.isObserving)
+    }
+
+    func testStopObservingSetsIsObservingFalse() {
+        observer.startObserving()
+        observer.stopObserving()
+        XCTAssertFalse(observer.isObserving)
+    }
+
+    func testStartObservingIsIdempotent() {
+        observer.startObserving()
+        observer.startObserving()
+
+        XCTAssertTrue(observer.isObserving, "Should still be observing after double start")
+
+        observer.stopObserving()
+        XCTAssertFalse(observer.isObserving)
+    }
+
+    func testStopObservingIsIdempotent() {
+        observer.startObserving()
+        observer.stopObserving()
+        observer.stopObserving()
+
+        XCTAssertFalse(observer.isObserving)
+    }
+
+    func testIsOnBatteryReflectsProvider() {
+        observer.currentPowerSourceProvider = { true }
+        XCTAssertTrue(observer.isOnBattery)
+
+        observer.currentPowerSourceProvider = { false }
+        XCTAssertFalse(observer.isOnBattery)
+    }
+
+    func testEvaluateFiresCallbackOnlyOnTransitions() {
+        var isOnBattery = false
+        observer.currentPowerSourceProvider = { isOnBattery }
+
+        var received: [Bool] = []
+        observer.onPowerSourceChanged = { received.append($0) }
+
+        observer.startObserving()
+
+        // Capacity-tick style notifications with no source change stay silent
+        observer.evaluatePowerSource()
+        observer.evaluatePowerSource()
+        XCTAssertEqual(received, [])
+
+        isOnBattery = true
+        observer.evaluatePowerSource()
+        observer.evaluatePowerSource()
+        XCTAssertEqual(received, [true], "Repeated battery notifications should fire once")
+
+        isOnBattery = false
+        observer.evaluatePowerSource()
+        XCTAssertEqual(received, [true, false])
+    }
+
+    func testDeinitStopsObserving() {
+        var obs: PowerSourceObserver? = PowerSourceObserver()
+        obs?.startObserving()
+        XCTAssertTrue(obs?.isObserving == true)
+
+        obs = nil
+        // No crash or leak — deinit calls stopObserving
+    }
+}

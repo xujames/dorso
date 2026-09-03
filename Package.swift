@@ -11,14 +11,16 @@ let package = Package(
         .library(name: "DorsoCore", targets: ["DorsoCore"])
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.10.0")
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.10.0"),
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.9.4")
     ],
     targets: [
         // Core logic library - testable, no main entry point
         .target(
             name: "DorsoCore",
             dependencies: [
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+                .product(name: "Sparkle", package: "Sparkle")
             ],
             path: "Sources",
             exclude: ["App", "Icons"],

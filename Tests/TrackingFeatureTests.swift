@@ -17,44 +17,7 @@ private actor EffectIntentRecorder {
 
 private extension TrackingRuntimeClient {
     static func recording(_ recorder: EffectIntentRecorder) -> Self {
-        Self(
-            startMonitoring: { await recorder.record(.startMonitoring) },
-            beginMonitoringSession: { await recorder.record(.beginMonitoringSession) },
-            applyStartupCameraProfile: { profile in
-                await recorder.record(.applyStartupCameraProfile(profile))
-            },
-            showOnboarding: { await recorder.record(.showOnboarding) },
-            switchCameraToMatchingProfile: { profile in
-                await recorder.record(.switchCamera(.matchingProfile(profile)))
-            },
-            switchCameraToFallback: { cameraID, profile in
-                await recorder.record(.switchCamera(.fallback(cameraID: cameraID, profile: profile)))
-            },
-            switchCameraToSelected: {
-                await recorder.record(.switchCamera(.selectedCamera))
-            },
-            syncUI: { await recorder.record(.syncUI) },
-            updateBlur: { await recorder.record(.updateBlur) },
-            trackAnalytics: { interval, isSlouching in
-                await recorder.record(
-                    .trackAnalytics(interval: interval, isSlouching: isSlouching)
-                )
-            },
-            recordSlouchEvent: { await recorder.record(.recordSlouchEvent) },
-            stopDetector: { source in await recorder.record(.stopDetector(source)) },
-            persistTrackingSource: { await recorder.record(.persistTrackingSource) },
-            showCalibrationPermissionDeniedAlert: {
-                await recorder.record(.showCalibrationPermissionDeniedAlert)
-            },
-            openPrivacySettings: { await recorder.record(.openPrivacySettings) },
-            showCameraCalibrationRetryAlert: { message in
-                await recorder.record(.showCameraCalibrationRetryAlert(message: message))
-            },
-            retryCalibration: { await recorder.record(.retryCalibration) },
-            startCalibrationForSource: { source in
-                await recorder.record(.startCalibrationForSource(source))
-            }
-        )
+        Self(perform: { intent in await recorder.record(intent) })
     }
 }
 
@@ -453,6 +416,159 @@ final class TrackingFeatureTests: XCTestCase {
         }
         await store.finish()
         await assertIntents([.startMonitoring], recorder: recorder)
+    }
+
+    // MARK: - Pause on Battery
+
+    @MainActor
+    func testPowerSourceChangesToBatteryPausesMonitoring() async {
+        let recorder = EffectIntentRecorder()
+        let store = makeStore(
+            initialState: TrackingFeature.State(
+                appState: .monitoring,
+                pauseOnBatteryEnabled: true
+            ),
+            recorder: recorder
+        )
+
+        await store.send(.powerSourceChanged(isOnBattery: true)) {
+            $0.isOnBattery = true
+            $0.appState = .paused(.onBattery)
+        }
+        await store.finish()
+        await assertIntents([], recorder: recorder)
+    }
+
+    @MainActor
+    func testPowerSourceReturnsToACResumesMonitoring() async {
+        let recorder = EffectIntentRecorder()
+        let store = makeStore(
+            initialState: TrackingFeature.State(
+                appState: .paused(.onBattery),
+                pauseOnBatteryEnabled: true,
+                isOnBattery: true
+            ),
+            recorder: recorder
+        )
+
+        await store.send(.powerSourceChanged(isOnBattery: false)) {
+            $0.isOnBattery = false
+            $0.appState = .monitoring
+        }
+        await store.finish()
+        await assertIntents([.startMonitoring], recorder: recorder)
+    }
+
+    @MainActor
+    func testPowerSourceChangeWithSettingDisabledOnlyRecordsBatteryState() async {
+        let recorder = EffectIntentRecorder()
+        let store = makeStore(
+            initialState: TrackingFeature.State(appState: .monitoring),
+            recorder: recorder
+        )
+
+        await store.send(.powerSourceChanged(isOnBattery: true)) {
+            $0.isOnBattery = true
+        }
+        await store.finish()
+        await assertIntents([], recorder: recorder)
+    }
+
+    @MainActor
+    func testEnablingPauseOnBatteryWhileOnBatteryPauses() async {
+        let recorder = EffectIntentRecorder()
+        let store = makeStore(
+            initialState: TrackingFeature.State(
+                appState: .monitoring,
+                isOnBattery: true
+            ),
+            recorder: recorder
+        )
+
+        await store.send(.setPauseOnBatteryEnabled(true)) {
+            $0.pauseOnBatteryEnabled = true
+            $0.appState = .paused(.onBattery)
+        }
+        await store.finish()
+        await assertIntents([], recorder: recorder)
+    }
+
+    @MainActor
+    func testDisablingPauseOnBatteryResumesMonitoring() async {
+        let recorder = EffectIntentRecorder()
+        let store = makeStore(
+            initialState: TrackingFeature.State(
+                appState: .paused(.onBattery),
+                pauseOnBatteryEnabled: true,
+                isOnBattery: true
+            ),
+            recorder: recorder
+        )
+
+        await store.send(.setPauseOnBatteryEnabled(false)) {
+            $0.pauseOnBatteryEnabled = false
+            $0.appState = .monitoring
+        }
+        await store.finish()
+        await assertIntents([.startMonitoring], recorder: recorder)
+    }
+
+    @MainActor
+    func testScreenUnlockOnBatteryLandsInBatteryPause() async {
+        let recorder = EffectIntentRecorder()
+        let store = makeStore(
+            initialState: TrackingFeature.State(
+                appState: .monitoring,
+                pauseOnBatteryEnabled: true
+            ),
+            recorder: recorder
+        )
+
+        await store.send(.screenLocked) {
+            $0.appState = .paused(.screenLocked)
+            $0.stateBeforeLock = .monitoring
+        }
+
+        // Unplugged while the screen was locked (e.g. lid closed and moved)
+        await store.send(.powerSourceChanged(isOnBattery: true)) {
+            $0.isOnBattery = true
+        }
+
+        await store.send(.screenUnlocked) {
+            $0.appState = .paused(.onBattery)
+            $0.stateBeforeLock = nil
+        }
+        await store.finish()
+        await assertIntents([], recorder: recorder)
+    }
+
+    @MainActor
+    func testAutomaticModeReadinessChangeDoesNotLiftBatteryPause() async {
+        let recorder = EffectIntentRecorder()
+        let store = makeStore(
+            initialState: TrackingFeature.State(
+                appState: .paused(.onBattery),
+                trackingMode: .automatic,
+                manualSource: .camera,
+                preferredSource: .airpods,
+                autoReturnEnabled: true,
+                pauseOnBatteryEnabled: true,
+                isOnBattery: true
+            ),
+            recorder: recorder
+        )
+
+        let readiness = TrackingSourceReadiness(
+            permissionGranted: true,
+            connected: true,
+            calibrated: true,
+            available: true
+        )
+        await store.send(.sourceReadinessChanged(source: .airpods, readiness: readiness)) {
+            $0.airPodsReadiness = readiness
+        }
+        await store.finish()
+        await assertIntents([], recorder: recorder)
     }
 
     @MainActor

@@ -9,6 +9,7 @@
 "menu.analytics" = "統計";
 "menu.settings" = "設定";
 "menu.quit" = "終了";
+"menu.checkForUpdates" = "アップデートを確認…";
 
 // MARK: - App Menu (DorsoMain.swift)
 
@@ -37,6 +38,7 @@
 "status.airPodsDisconnected" = "状態: AirPods 未接続";
 "status.pausedScreenLocked" = "状態: 一時停止 (画面ロック中)";
 "status.pausedPutInAirPods" = "状態: 一時停止 (AirPods を装着してください)";
+"status.pausedOnBattery" = "状態: 一時停止 (バッテリー駆動中)";
 
 // MARK: - Menu Bar Icon Accessibility (Models.swift)
 
@@ -120,6 +122,13 @@
 "settings.mode.manual" = "手動";
 "settings.mode.automatic" = "自動";
 "settings.preferred" = "優先";
+"settings.source" = "ソース";
+"settings.section.response" = "姿勢への反応";
+"settings.section.behavior" = "動作";
+"settings.appearance" = "外観";
+"settings.appearance.auto" = "自動";
+"settings.appearance.light" = "ライト";
+"settings.appearance.dark" = "ダーク";
 "settings.active" = "使用中";
 "settings.calibrated" = "校正済み";
 "settings.notCalibrated" = "未校正";
@@ -147,6 +156,8 @@
 "settings.detection.help" = "応答速度とバッテリーのバランス。高速は素早く検出し、省エネはバッテリーを節約します。";
 "settings.launchAtLogin" = "ログイン時に起動";
 "settings.launchAtLogin.help" = "ログイン時に Dorso を自動的に起動";
+"settings.autoUpdates" = "自動アップデート";
+"settings.autoUpdates.help" = "バックグラウンドで新しいバージョンを確認し、インストールを提案";
 "settings.showInDock" = "Dock に表示";
 "settings.showInDock.help" = "Dorso を Dock と Cmd+Tab に表示";
 "settings.blurWhenAway" = "離席時にぼかす";
@@ -154,6 +165,10 @@
 "settings.blurWhenAway.help.airpods" = "離席時に完全なぼかしを適用。カメラでの検出時のみ利用可能です。";
 "settings.pauseOnTheGo" = "移動中は一時停止";
 "settings.pauseOnTheGo.help" = "ノートパソコンのディスプレイのみの場合に自動一時停止";
+"settings.pauseOnBattery" = "バッテリー駆動中は一時停止";
+"settings.pauseOnBattery.help" = "バッテリー駆動中は自動的に一時停止して電力を節約";
+"settings.fullScreenOverlay" = "全画面オーバーレイ";
+"settings.fullScreenOverlay.help" = "Dockとメニューバーにも効果を広げる";
 "settings.shortcut" = "ショートカット";
 "settings.shortcut.help" = "Dorso の有効/無効を切り替えるグローバルキーボードショートカット。フィールドをクリックして、お好みのキーの組み合わせを押してください。";
 "settings.shortcut.press" = "押す...";

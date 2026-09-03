@@ -9,6 +9,7 @@
 "menu.analytics" = "统计";
 "menu.settings" = "设置";
 "menu.quit" = "退出";
+"menu.checkForUpdates" = "检查更新…";
 
 // MARK: - App Menu (DorsoMain.swift)
 
@@ -37,6 +38,7 @@
 "status.airPodsDisconnected" = "状态：AirPods 已断开";
 "status.pausedScreenLocked" = "状态：已暂停（屏幕已锁定）";
 "status.pausedPutInAirPods" = "状态：已暂停（请佩戴 AirPods）";
+"status.pausedOnBattery" = "状态：已暂停（电池供电）";
 
 // MARK: - Menu Bar Icon Accessibility (Models.swift)
 
@@ -120,6 +122,13 @@
 "settings.mode.manual" = "手动";
 "settings.mode.automatic" = "自动";
 "settings.preferred" = "首选";
+"settings.source" = "来源";
+"settings.section.response" = "姿势响应";
+"settings.section.behavior" = "行为";
+"settings.appearance" = "外观";
+"settings.appearance.auto" = "自动";
+"settings.appearance.light" = "浅色";
+"settings.appearance.dark" = "深色";
 "settings.active" = "活跃";
 "settings.calibrated" = "已校准";
 "settings.notCalibrated" = "未校准";
@@ -147,6 +156,8 @@
 "settings.detection.help" = "在响应速度和电池之间取得平衡。快速响应检测迅速，省电模式节省电量。";
 "settings.launchAtLogin" = "登录时启动";
 "settings.launchAtLogin.help" = "登录时自动启动 Dorso";
+"settings.autoUpdates" = "自动更新";
+"settings.autoUpdates.help" = "在后台检查新版本并提示安装";
 "settings.showInDock" = "在程序坞中显示";
 "settings.showInDock.help" = "在程序坞和 Cmd+Tab 中显示 Dorso";
 "settings.blurWhenAway" = "离开时模糊";
@@ -154,6 +165,10 @@
 "settings.blurWhenAway.help.airpods" = "离开时应用完全模糊。仅在使用摄像头检测时可用。";
 "settings.pauseOnTheGo" = "移动中暂停";
 "settings.pauseOnTheGo.help" = "仅使用笔记本显示屏时自动暂停";
+"settings.pauseOnBattery" = "电池供电时暂停";
+"settings.pauseOnBattery.help" = "使用电池时自动暂停以省电";
+"settings.fullScreenOverlay" = "全屏覆盖";
+"settings.fullScreenOverlay.help" = "将效果延伸至程序坞和菜单栏";
 "settings.shortcut" = "快捷键";
 "settings.shortcut.help" = "用于开关 Dorso 的全局快捷键。点击输入框，然后按下您想要的组合键。";
 "settings.shortcut.press" = "请按...";

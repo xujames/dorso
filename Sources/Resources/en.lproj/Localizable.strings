@@ -9,6 +9,7 @@
 "menu.analytics" = "Analytics";
 "menu.settings" = "Settings";
 "menu.quit" = "Quit";
+"menu.checkForUpdates" = "Check for Updates…";
 
 // MARK: - App Menu (DorsoMain.swift)
 
@@ -37,6 +38,7 @@
 "status.airPodsDisconnected" = "Status: AirPods disconnected";
 "status.pausedScreenLocked" = "Status: Paused (screen locked)";
 "status.pausedPutInAirPods" = "Status: Paused (put in AirPods)";
+"status.pausedOnBattery" = "Status: Paused (on battery)";
 
 // MARK: - Menu Bar Icon Accessibility (Models.swift)
 
@@ -120,6 +122,13 @@
 "settings.mode.manual" = "Manual";
 "settings.mode.automatic" = "Automatic";
 "settings.preferred" = "Preferred";
+"settings.source" = "Source";
+"settings.section.response" = "Posture response";
+"settings.section.behavior" = "Behavior";
+"settings.appearance" = "Appearance";
+"settings.appearance.auto" = "Auto";
+"settings.appearance.light" = "Light";
+"settings.appearance.dark" = "Dark";
 "settings.active" = "Active";
 "settings.calibrated" = "Calibrated";
 "settings.notCalibrated" = "Not calibrated";
@@ -147,6 +156,8 @@
 "settings.detection.help" = "Balance responsiveness vs battery. Responsive detects quickly, Performance saves battery.";
 "settings.launchAtLogin" = "Launch at login";
 "settings.launchAtLogin.help" = "Automatically start Dorso when you log in";
+"settings.autoUpdates" = "Automatic updates";
+"settings.autoUpdates.help" = "Check for new versions in the background and offer to install them";
 "settings.showInDock" = "Show in dock";
 "settings.showInDock.help" = "Keep Dorso in Dock and Cmd+Tab";
 "settings.blurWhenAway" = "Blur when away";
@@ -154,6 +165,10 @@
 "settings.blurWhenAway.help.airpods" = "Apply full blur when you step away. Only available when using camera for detection.";
 "settings.pauseOnTheGo" = "Pause on the go";
 "settings.pauseOnTheGo.help" = "Auto-pause on laptop-only display";
+"settings.pauseOnBattery" = "Pause on battery";
+"settings.pauseOnBattery.help" = "Auto-pause to save power when on battery";
+"settings.fullScreenOverlay" = "Full screen overlay";
+"settings.fullScreenOverlay.help" = "Extend effects over the dock and menu bar";
 "settings.shortcut" = "Shortcut";
 "settings.shortcut.help" = "Global keyboard shortcut to toggle Dorso. Click the field and press your desired key combination.";
 "settings.shortcut.press" = "Press...";

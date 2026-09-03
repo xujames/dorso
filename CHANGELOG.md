@@ -5,6 +5,63 @@ All notable changes to Dorso will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.1] - 2026-07-19
+
+### Fixed
+- Selecting an appearance in Settings now always applies and persists
+- Toggles keep their color when switching between Auto, Light, and Dark instead of briefly flashing the system accent
+
+## [1.15.0] - 2026-07-19
+
+### Added
+- Appearance setting: keep Dorso matching the system, or force Light or Dark
+
+### Changed
+- Redesigned Settings window: organized section cards, cleaner sliders and buttons, clearer device status, faster tooltips, and larger click targets
+
+## [1.14.2] - 2026-07-19
+
+### Fixed
+- Update alerts from background checks now appear front and center; previously they could open invisibly behind other windows and go unnoticed
+
+## [1.14.1] - 2026-07-19
+
+### Fixed
+- Toggling compatibility mode while the screen is blurred no longer leaves the screen stuck in a blurred state
+
+## [1.14.0] - 2026-07-19
+
+### Added
+- Auto-update for GitHub builds: Dorso now checks for new versions in the background and offers to install them in place, no more manual downloads. Includes a "Check for Updates" menu item and an "Automatic updates" toggle in Settings. App Store installs keep updating through the App Store as before
+
+### Acknowledgments
+- Thanks to [@Shadow1363](https://github.com/Shadow1363) for suggesting this feature ([#83](https://github.com/tldev/dorso/issues/83))
+
+## [1.13.0] - 2026-07-17
+
+### Added
+- Pause on battery: a new Settings option that automatically pauses posture tracking while the Mac runs on battery to save power, resuming when AC power returns — including when the Mac was unplugged while the lid was closed
+
+### Acknowledgments
+- Thanks to [@MitchTalmadge](https://github.com/MitchTalmadge) for suggesting this feature ([#90](https://github.com/tldev/dorso/issues/90))
+
+## [1.12.0] - 2026-07-07
+
+### Added
+- Full screen effects: a new Settings toggle controls whether posture warning effects stay between the Dock and menu bar or cover the entire screen, overlapping both
+
+### Fixed
+- App no longer stays stuck in the Dock and Cmd+Tab switcher after opening any window
+- Active warning overlay no longer vanishes when display configuration changes rebuild the overlay windows
+- Settings and other app windows no longer open partially off-screen on multi-display setups. Windows now open centered on the screen you're using, remember where you last closed them, and stay fully visible when their content resizes
+
+### Changed
+- Major internal restructuring to make the app easier to maintain and less bug-prone: all tracking side effects now flow through a single, compiler-checked path, duplicate calibration flows were unified, and the test suite grew from 367 to 404 tests and now runs headless
+
+### Acknowledgments
+- Thanks to [@mattwaler](https://github.com/mattwaler) for contributing the full screen effects feature ([#92](https://github.com/tldev/dorso/pull/92))
+- Thanks to [@wensiet](https://github.com/wensiet) for reporting the Cmd+Tab visibility bug and proposing the initial fix ([#93](https://github.com/tldev/dorso/pull/93))
+
 ## [1.11.2] - 2026-04-24
 
 ### Fixed

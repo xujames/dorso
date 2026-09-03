@@ -102,6 +102,8 @@ struct PostureUIState: Equatable {
             return L("status.pausedScreenLocked")
         case .airPodsRemoved:
             return L("status.pausedPutInAirPods")
+        case .onBattery:
+            return L("status.pausedOnBattery")
         }
     }
 }

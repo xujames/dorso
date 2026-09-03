@@ -9,6 +9,7 @@
 "menu.analytics" = "Statistiques";
 "menu.settings" = "Réglages";
 "menu.quit" = "Quitter";
+"menu.checkForUpdates" = "Rechercher des mises à jour…";
 
 // MARK: - App Menu (DorsoMain.swift)
 
@@ -37,6 +38,7 @@
 "status.airPodsDisconnected" = "État : AirPods déconnectés";
 "status.pausedScreenLocked" = "État : En pause (écran verrouillé)";
 "status.pausedPutInAirPods" = "État : En pause (mettez vos AirPods)";
+"status.pausedOnBattery" = "État : En pause (sur batterie)";
 
 // MARK: - Menu Bar Icon Accessibility (Models.swift)
 
@@ -120,6 +122,13 @@
 "settings.mode.manual" = "Manuel";
 "settings.mode.automatic" = "Automatique";
 "settings.preferred" = "Préférée";
+"settings.source" = "Source";
+"settings.section.response" = "Réponse posturale";
+"settings.section.behavior" = "Comportement";
+"settings.appearance" = "Apparence";
+"settings.appearance.auto" = "Auto";
+"settings.appearance.light" = "Clair";
+"settings.appearance.dark" = "Sombre";
 "settings.active" = "Active";
 "settings.calibrated" = "Calibrée";
 "settings.notCalibrated" = "Non calibrée";
@@ -147,6 +156,8 @@
 "settings.detection.help" = "Équilibre entre réactivité et batterie. Réactif détecte rapidement, Performance économise la batterie.";
 "settings.launchAtLogin" = "Lancer au démarrage";
 "settings.launchAtLogin.help" = "Démarrer Dorso automatiquement à l'ouverture de session";
+"settings.autoUpdates" = "Mises à jour automatiques";
+"settings.autoUpdates.help" = "Rechercher les nouvelles versions en arrière-plan et proposer de les installer";
 "settings.showInDock" = "Montrer dans le Dock";
 "settings.showInDock.help" = "Garde Dorso visible dans le Dock et avec Cmd+Tab";
 "settings.blurWhenAway" = "Flouter en cas d'absence";
@@ -154,6 +165,10 @@
 "settings.blurWhenAway.help.airpods" = "Applique un flou complet lorsque vous vous absentez. Disponible uniquement avec la détection par caméra.";
 "settings.pauseOnTheGo" = "Pause en déplacement";
 "settings.pauseOnTheGo.help" = "Pause automatique sur écran du portable uniquement";
+"settings.pauseOnBattery" = "Pause sur batterie";
+"settings.pauseOnBattery.help" = "Pause automatique pour économiser l'énergie sur batterie";
+"settings.fullScreenOverlay" = "Superposition plein écran";
+"settings.fullScreenOverlay.help" = "Étendre les effets sur le Dock et la barre des menus";
 "settings.shortcut" = "Raccourci";
 "settings.shortcut.help" = "Raccourci clavier global pour activer/désactiver Dorso. Cliquez sur le champ et appuyez sur la nouvelle combinaison de touches souhaitée.";
 "settings.shortcut.press" = "Appuyez...";

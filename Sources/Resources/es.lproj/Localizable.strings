@@ -9,6 +9,7 @@
 "menu.analytics" = "Estadísticas";
 "menu.settings" = "Ajustes";
 "menu.quit" = "Salir";
+"menu.checkForUpdates" = "Buscar actualizaciones…";
 
 // MARK: - App Menu (DorsoMain.swift)
 
@@ -37,6 +38,7 @@
 "status.airPodsDisconnected" = "Estado: AirPods desconectados";
 "status.pausedScreenLocked" = "Estado: Pausado (pantalla bloqueada)";
 "status.pausedPutInAirPods" = "Estado: Pausado (ponte los AirPods)";
+"status.pausedOnBattery" = "Estado: Pausado (con batería)";
 
 // MARK: - Menu Bar Icon Accessibility (Models.swift)
 
@@ -120,6 +122,13 @@
 "settings.mode.manual" = "Manual";
 "settings.mode.automatic" = "Automático";
 "settings.preferred" = "Preferido";
+"settings.source" = "Fuente";
+"settings.section.response" = "Respuesta postural";
+"settings.section.behavior" = "Comportamiento";
+"settings.appearance" = "Apariencia";
+"settings.appearance.auto" = "Auto";
+"settings.appearance.light" = "Claro";
+"settings.appearance.dark" = "Oscuro";
 "settings.active" = "Activo";
 "settings.calibrated" = "Calibrado";
 "settings.notCalibrated" = "Sin calibrar";
@@ -147,6 +156,8 @@
 "settings.detection.help" = "Equilibrio entre capacidad de respuesta y duración de la batería. Reactiva detecta rápido, Rendimienta ahorra batería.";
 "settings.launchAtLogin" = "Iniciar al arrancar";
 "settings.launchAtLogin.help" = "Iniciar Dorso automáticamente al iniciar sesión";
+"settings.autoUpdates" = "Actualizaciones automáticas";
+"settings.autoUpdates.help" = "Buscar nuevas versiones en segundo plano y ofrecer instalarlas";
 "settings.showInDock" = "Mostrar en el dock";
 "settings.showInDock.help" = "Mantener Dorso en el Dock y Cmd+Tab";
 "settings.blurWhenAway" = "Desenfocar al ausentarse";
@@ -154,6 +165,10 @@
 "settings.blurWhenAway.help.airpods" = "Aplicar desenfoque completo cuando te ausentes. Solo disponible cuando se usa la cámara para la detección.";
 "settings.pauseOnTheGo" = "Pausar en movimiento";
 "settings.pauseOnTheGo.help" = "Pausar automáticamente con pantalla de portátil";
+"settings.pauseOnBattery" = "Pausar con batería";
+"settings.pauseOnBattery.help" = "Pausar automáticamente para ahorrar energía con batería";
+"settings.fullScreenOverlay" = "Superposición a pantalla completa";
+"settings.fullScreenOverlay.help" = "Extender efectos sobre el Dock y la barra de menús";
 "settings.shortcut" = "Atajo";
 "settings.shortcut.help" = "Atajo de teclado global para activar/desactivar Dorso. Haz clic en el campo y pulsa la combinación de teclas deseada.";
 "settings.shortcut.press" = "Pulsa...";

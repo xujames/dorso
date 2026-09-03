@@ -9,6 +9,7 @@
 "menu.analytics" = "Statistiken";
 "menu.settings" = "Einstellungen";
 "menu.quit" = "Beenden";
+"menu.checkForUpdates" = "Nach Updates suchen…";
 
 // MARK: - App Menu (DorsoMain.swift)
 
@@ -37,6 +38,7 @@
 "status.airPodsDisconnected" = "Status: AirPods getrennt";
 "status.pausedScreenLocked" = "Status: Pausiert (Bildschirm gesperrt)";
 "status.pausedPutInAirPods" = "Status: Pausiert (AirPods einsetzen)";
+"status.pausedOnBattery" = "Status: Pausiert (Akkubetrieb)";
 
 // MARK: - Menu Bar Icon Accessibility (Models.swift)
 
@@ -120,6 +122,13 @@
 "settings.mode.manual" = "Manuell";
 "settings.mode.automatic" = "Automatisch";
 "settings.preferred" = "Bevorzugt";
+"settings.source" = "Quelle";
+"settings.section.response" = "Haltungsreaktion";
+"settings.section.behavior" = "Verhalten";
+"settings.appearance" = "Erscheinungsbild";
+"settings.appearance.auto" = "Auto";
+"settings.appearance.light" = "Hell";
+"settings.appearance.dark" = "Dunkel";
 "settings.active" = "Aktiv";
 "settings.calibrated" = "Kalibriert";
 "settings.notCalibrated" = "Nicht kalibriert";
@@ -147,6 +156,8 @@
 "settings.detection.help" = "Balance zwischen Reaktionsfähigkeit und Akku. Reaktiv erkennt schnell, Leistung schont den Akku.";
 "settings.launchAtLogin" = "Beim Anmelden starten";
 "settings.launchAtLogin.help" = "Dorso automatisch beim Anmelden starten";
+"settings.autoUpdates" = "Automatische Updates";
+"settings.autoUpdates.help" = "Im Hintergrund nach neuen Versionen suchen und deren Installation anbieten";
 "settings.showInDock" = "Im Dock anzeigen";
 "settings.showInDock.help" = "Dorso im Dock und bei Cmd+Tab anzeigen";
 "settings.blurWhenAway" = "Bei Abwesenheit unscharf";
@@ -154,6 +165,10 @@
 "settings.blurWhenAway.help.airpods" = "Volle Unschärfe anwenden, wenn Sie sich entfernen. Nur verfügbar bei Kamera-Erkennung.";
 "settings.pauseOnTheGo" = "Unterwegs pausieren";
 "settings.pauseOnTheGo.help" = "Automatisch pausieren bei reinem Laptop-Display";
+"settings.pauseOnBattery" = "Im Akkubetrieb pausieren";
+"settings.pauseOnBattery.help" = "Automatisch pausieren, um im Akkubetrieb Strom zu sparen";
+"settings.fullScreenOverlay" = "Vollbild-Overlay";
+"settings.fullScreenOverlay.help" = "Effekte auf Dock und Menüleiste ausdehnen";
 "settings.shortcut" = "Tastenkürzel";
 "settings.shortcut.help" = "Globales Tastenkürzel zum Ein-/Ausschalten von Dorso. Klicken Sie auf das Feld und drücken Sie die gewünschte Tastenkombination.";
 "settings.shortcut.press" = "Drücken...";
