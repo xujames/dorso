@@ -43,6 +43,14 @@ if [[ "$*" == *"--dev"* ]]; then
     echo "Dev build: debug config, host arch only..."
 fi
 
+# SwiftPM 6.3+ defaults to the "swiftbuild" engine, which writes every product
+# to a single .build/out/Products/<Config> directory. That breaks the paths
+# below and, worse, makes the two --arch passes of the universal release build
+# overwrite each other. Pin the native engine, which keeps the per-arch layout.
+if swift build --help 2>/dev/null | grep -q -- "--build-system"; then
+    SWIFT_BUILD_FLAGS+=(--build-system native)
+fi
+
 # Directories
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build"
@@ -319,16 +327,26 @@ chmod +x "$MACOS_DIR/$APP_NAME"
 # Strip extended attributes (e.g., com.apple.quarantine on files downloaded
 # from the web). App Store upload rejects bundles containing xattrs with
 # error 91109; notarization can also complain. Must run before signing.
-echo "Removing extended attributes..."
-if command -v xattr >/dev/null 2>&1; then
-    if ! xattr -cr "$APP_BUNDLE"; then
+# `xattr -cr` does not reliably descend into nested bundles (Sparkle's .xpc and
+# .nib directories keep com.apple.FinderInfo), so walk every path explicitly.
+strip_xattrs() {
+    command -v xattr >/dev/null 2>&1 || return 0
+    if ! find "$APP_BUNDLE" -print0 | xargs -0 xattr -c 2>/dev/null; then
         echo -e "${YELLOW}Warning: Failed to clear extended attributes. Codesign may fail.${NC}"
     fi
-fi
+}
+
+echo "Removing extended attributes..."
+strip_xattrs
 
 # Ad-hoc sign the app bundle for macOS Gatekeeper compatibility
 echo "Signing app bundle..."
 codesign --force --deep --sign - "$APP_BUNDLE"
+
+# Signing rewrites nested bundles, and on iCloud-synced checkouts the file
+# provider re-tags those directories with com.apple.FinderInfo as it does so.
+# Strip again afterwards or `codesign --verify --strict` rejects the bundle.
+strip_xattrs
 
 # Verify the build
 echo ""
