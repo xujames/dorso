@@ -20,8 +20,18 @@ MIN_MACOS="13.0"
 
 # Sparkle auto-update (direct-distribution builds only; App Store builds
 # exclude Sparkle entirely and rely on the App Store for updates)
-SPARKLE_FEED_URL="https://raw.githubusercontent.com/tldev/dorso/main/appcast.xml"
-SPARKLE_PUBLIC_ED_KEY="DGZFLiX7GOAurNDYQQQaoR4Hb4csYScDIIiui74ZvLY="
+#
+# This fork updates ONLY from xujames/dorso. Both values below are deliberately
+# divorced from upstream (tldev/dorso):
+#   - the feed is served from this fork, so upstream releases are never seen;
+#   - the public key is this fork's own, so a build signed by upstream's key is
+#     rejected even if it somehow reached the feed.
+# The matching private key lives in this machine's login Keychain and is used by
+# release.sh via Sparkle's sign_update. Merging upstream will conflict on these
+# lines by design — keep this fork's values unless you intend to hand the update
+# channel back to upstream.
+SPARKLE_FEED_URL="https://raw.githubusercontent.com/xujames/dorso/main/appcast.xml"
+SPARKLE_PUBLIC_ED_KEY="NJ2cun6kT1yG+JhCszez4TdXGw+RdbkdPLISzB6F/W4="
 
 # Check for App Store build flag
 APP_STORE_BUILD=false

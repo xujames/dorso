@@ -19,6 +19,12 @@ cd "$SCRIPT_DIR"
 DEVELOPER_ID="Developer ID Application: Thomas Johnell (KBF2YGT2KP)"
 NOTARY_PROFILE="notarytool-dorso"
 
+# GitHub repository this fork releases to. Every appcast download/release URL is
+# built from this, so the update feed only ever points at this fork's own
+# releases — never upstream's. Must stay in step with SPARKLE_FEED_URL in
+# build.sh. Merging upstream will conflict here by design.
+GITHUB_REPO="xujames/dorso"
+
 # Check for required dependencies
 check_dependency() {
     local cmd="$1"
@@ -288,8 +294,8 @@ fi
 echo -e "${GREEN}[8/8] Updating appcast...${NC}"
 SIGN_ATTRS=$("$SPARKLE_BIN/sign_update" "build/$ZIP_NAME")
 PUB_DATE=$(LC_ALL=C date "+%a, %d %b %Y %H:%M:%S %z")
-DOWNLOAD_URL="https://github.com/tldev/dorso/releases/download/$TAG/$ZIP_NAME"
-RELEASE_URL="https://github.com/tldev/dorso/releases/tag/$TAG"
+DOWNLOAD_URL="https://github.com/$GITHUB_REPO/releases/download/$TAG/$ZIP_NAME"
+RELEASE_URL="https://github.com/$GITHUB_REPO/releases/tag/$TAG"
 
 # Drop any existing appcast item for this tag (re-release), then insert the
 # new item below the marker comment
@@ -342,4 +348,4 @@ echo ""
 echo "Files:"
 ls -lh "build/$ZIP_NAME" "build/$DMG_NAME" 2>/dev/null
 echo ""
-echo -e "Release URL: ${CYAN}https://github.com/tldev/dorso/releases/tag/$TAG${NC}"
+echo -e "Release URL: ${CYAN}https://github.com/$GITHUB_REPO/releases/tag/$TAG${NC}"
